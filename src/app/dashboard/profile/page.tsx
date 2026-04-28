@@ -31,8 +31,8 @@ export default function ProfilePage() {
             <Label htmlFor="measurements" className="text-xl font-headline">Body Measurements & Figure</Label>
             <Input
               id="measurements"
-              placeholder="e.g., Height 5'6\", size M, hourglass figure..."
-              defaultValue="Height 5'4\", size S, pear-shaped figure."
+              placeholder="e.g., Height 5'6&quot;, size M, hourglass figure..."
+              defaultValue="Height 5'4&quot;, size S, pear-shaped figure."
             />
           </div>
           <div className="space-y-2">
