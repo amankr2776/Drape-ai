@@ -3,6 +3,9 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { CustomCursor } from '@/components/custom-cursor';
+import Header from '@/components/header';
+import Footer from '@/components/landing/footer';
+import ScrollToTop from '@/components/scroll-to-top';
 
 export const metadata: Metadata = {
   title: 'DRAPE AI',
@@ -21,10 +24,13 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
         <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
       </head>
-      <body className={cn('font-body antialiased')}>
+      <body className={cn('font-body antialiased bg-background')}>
         <CustomCursor />
+        <Header />
         {children}
+        <Footer />
         <Toaster />
+        <ScrollToTop />
       </body>
     </html>
   );
