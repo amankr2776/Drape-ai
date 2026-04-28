@@ -4,7 +4,6 @@ import { useState, useEffect, createElement } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, ScanLine, Bot, Palette, ShoppingCart, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
 const analysisSteps = [
@@ -13,7 +12,7 @@ const analysisSteps = [
   { text: 'Reading your skin tone...', icon: Palette },
   { text: 'Consulting style database...', icon: Bot },
   { text: 'Fetching live prices...', icon: ShoppingCart },
-  { text: 'Analysis Complete!', icon: CheckCircle },
+  { text: 'Generating your report...', icon: CheckCircle },
 ];
 
 const TOTAL_DURATION = 10000; // 10 seconds
@@ -21,7 +20,6 @@ const STEP_DURATION = TOTAL_DURATION / analysisSteps.length;
 
 export default function AnalyzePage() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [analysisComplete, setAnalysisComplete] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -32,31 +30,12 @@ export default function AnalyzePage() {
       return () => clearTimeout(timer);
     } else {
       const finalTimer = setTimeout(() => {
-        setAnalysisComplete(true);
+        router.push('/results');
       }, STEP_DURATION);
       return () => clearTimeout(finalTimer);
     }
-  }, [currentStep]);
+  }, [currentStep, router]);
 
-  if (analysisComplete) {
-    return (
-      <div className="container mx-auto p-4 md:p-8 flex items-center justify-center min-h-screen">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <h1 className="text-5xl md:text-7xl font-bold text-primary">Your Style Report is Ready</h1>
-          <p className="mt-4 text-lg text-foreground/70">
-            This is where your personalized style results will be displayed. This feature is under construction.
-          </p>
-           <Button onClick={() => router.push('/dashboard')} className="mt-8 font-headline text-lg tracking-wider">
-              Go to Dashboard
-            </Button>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4 overflow-hidden">
