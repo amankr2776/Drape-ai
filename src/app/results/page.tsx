@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -120,20 +121,24 @@ const ResultsPage = () => {
                 <Card key={outfit.id} className="group/card break-inside-avoid overflow-hidden border-border hover:border-primary transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:glow-gold">
                   <CardContent className="p-0">
                     <div className="relative">
-                      <Image
-                        src={outfit.image}
-                        alt={outfit.name}
-                        width={600}
-                        height={outfit.size === 'lg' ? 900 : 750}
-                        className="w-full h-auto object-cover"
-                        data-ai-hint="fashion editorial"
-                      />
+                      <Link href={`/product/${outfit.id}`} passHref>
+                        <Image
+                          src={outfit.image}
+                          alt={outfit.name}
+                          width={600}
+                          height={outfit.size === 'lg' ? 900 : 750}
+                          className="w-full h-auto object-cover cursor-pointer"
+                          data-ai-hint="fashion editorial"
+                        />
+                      </Link>
                        <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
                          <Button size="icon" variant="secondary" className="h-9 w-9 rounded-full bg-background/50 hover:bg-background/80"><Heart className="h-4 w-4" /></Button>
                        </div>
                     </div>
                     <div className="p-4 space-y-3">
-                      <h3 className="font-headline text-2xl text-primary">{outfit.name}</h3>
+                      <Link href={`/product/${outfit.id}`} passHref>
+                        <h3 className="font-headline text-2xl text-primary cursor-pointer hover:underline">{outfit.name}</h3>
+                      </Link>
                       <p className="text-sm text-foreground/70 italic">"{outfit.aiReason}"</p>
                       <div className="flex items-center justify-between">
                          <Badge variant="outline">{outfit.platform}</Badge>
