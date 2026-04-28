@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "outfit-1",
+      "description": "Elegant woman in a modern sari.",
+      "imageUrl": "https://picsum.photos/seed/outfit1/800/1200",
+      "imageHint": "fashion editorial"
+    },
+    {
+      "id": "outfit-2",
+      "description": "Man in a stylish kurta.",
+      "imageUrl": "https://picsum.photos/seed/outfit2/800/1200",
+      "imageHint": "fashion model"
+    },
+    {
+      "id": "outfit-3",
+      "description": "Close up of fashion accessories.",
+      "imageUrl": "https://picsum.photos/seed/outfit3/800/1200",
+      "imageHint": "fashion accessory"
+    },
+    {
+      "id": "outfit-4",
+      "description": "Woman in a flowing dress.",
+      "imageUrl": "https://picsum.photos/seed/outfit4/800/1200",
+      "imageHint": "fashion dress"
+    }
+  ]
 }
