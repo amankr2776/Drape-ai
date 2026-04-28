@@ -1,13 +1,13 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
 import { getOutfitRecommendation } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { OutfitDisplay } from '@/components/outfit-display';
 import { OutfitDisplaySkeleton } from '@/components/loading-skeletons';
-import { useEffect } from 'react';
+import { useEffect, useActionState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Wand2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,7 +38,7 @@ function SubmitButton() {
 
 export default function DashboardPage() {
   const initialState = { recommendation: null, error: null };
-  const [state, formAction] = useFormState(getOutfitRecommendation, initialState);
+  const [state, formAction] = useActionState(getOutfitRecommendation, initialState);
   const { toast } = useToast();
 
   useEffect(() => {
