@@ -20,7 +20,7 @@ const navItems = [
   { href: '/dashboard/profile', label: 'Profile', icon: UserCircle },
   { href: '/dashboard/wardrobe', label: 'Wardrobe', icon: Shirt },
   { href: '/dashboard/history', label: 'History', icon: History },
-  { href: '/analyze', label: 'Analyze', icon: ScanSearch },
+  { href: '/onboarding', label: 'Analyze', icon: ScanSearch },
 ];
 
 export default function DashboardLayout({

@@ -62,7 +62,7 @@ const Hero = () => {
           AI that reads your body. Styles your soul.
         </motion.p>
         <motion.div className="mt-8 flex flex-col sm:flex-row gap-4" variants={itemVariants}>
-          <Link href="/analyze" passHref>
+          <Link href="/onboarding" passHref>
             <Button size="lg" className="font-headline text-lg tracking-wider">
               Analyze My Style
             </Button>
