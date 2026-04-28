@@ -54,7 +54,7 @@ const Features = () => {
         >
           {featuresData.map((feature, index) => (
             <motion.div key={index} variants={cardVariants} className={feature.className}>
-              <Card className="h-full bg-card border-border hover:border-primary/50 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl hover:glow-gold">
+              <Card className="h-full bg-card border-border hover:border-primary/50 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl hover:glow-gold hover:rotate-1">
                 <CardHeader>
                   <div className="flex items-center gap-4">
                     {feature.icon}

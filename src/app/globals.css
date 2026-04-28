@@ -80,3 +80,20 @@
 .animate-marquee {
   animation: marquee 30s linear infinite;
 }
+
+@media (pointer: fine) {
+  body {
+    cursor: none;
+  }
+
+  .custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+  }
+}

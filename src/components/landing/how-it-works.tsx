@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Camera, FileText, BrainCircuit, Shirt } from 'lucide-react';
+import { Camera, FilePenLine, BrainCircuit, Shirt } from 'lucide-react';
 
 const steps = [
   {
@@ -10,7 +10,7 @@ const steps = [
     description: 'Snap a full-body picture. Our AI needs just one image to work its magic.',
   },
   {
-    icon: FileText,
+    icon: FilePenLine,
     title: 'Enter Details',
     description: 'Tell us about the occasion, your style preferences, and any specific needs.',
   },

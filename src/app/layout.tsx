@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
+import { CustomCursor } from '@/components/custom-cursor';
 
 export const metadata: Metadata = {
   title: 'DRAPE AI',
@@ -21,6 +22,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn('font-body antialiased')}>
+        <CustomCursor />
         {children}
         <Toaster />
       </body>

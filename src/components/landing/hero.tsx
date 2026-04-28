@@ -62,7 +62,7 @@ const Hero = () => {
           AI that reads your body. Styles your soul.
         </motion.p>
         <motion.div className="mt-8 flex flex-col sm:flex-row gap-4" variants={itemVariants}>
-          <Link href="/dashboard" passHref>
+          <Link href="/analyze" passHref>
             <Button size="lg" className="font-headline text-lg tracking-wider">
               Analyze My Style
             </Button>
@@ -78,7 +78,7 @@ const Hero = () => {
           variants={itemVariants}
         >
           <div className="relative mt-8 animate-pulse">
-            <span className="font-body text-sm text-foreground/50">Powered by Genkit AI</span>
+            <span className="font-body text-sm text-foreground/50">Powered by Groq AI</span>
           </div>
         </motion.div>
       </motion.div>

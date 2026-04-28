@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/sidebar';
 import { DrapeLogo } from '@/components/drape-logo';
 import { cn } from '@/lib/utils';
-import { History, LayoutDashboard, Shirt, UserCircle } from 'lucide-react';
+import { History, LayoutDashboard, ScanSearch, Shirt, UserCircle } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
@@ -20,6 +20,7 @@ const navItems = [
   { href: '/dashboard/profile', label: 'Profile', icon: UserCircle },
   { href: '/dashboard/wardrobe', label: 'Wardrobe', icon: Shirt },
   { href: '/dashboard/history', label: 'History', icon: History },
+  { href: '/analyze', label: 'Analyze', icon: ScanSearch },
 ];
 
 export default function DashboardLayout({
