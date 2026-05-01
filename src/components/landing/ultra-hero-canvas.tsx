@@ -196,10 +196,13 @@ export const UltraHeroCanvas: React.FC = () => {
       composer.addPass(glitch);
       
       // Random glitch trigger
-      setInterval(() => {
+      const glitchInterval = setInterval(() => {
         glitch.enabled = true;
         setTimeout(() => { glitch.enabled = false; }, 300);
       }, 10000);
+      
+      // Cleanup for interval
+      (window as any)._glitchInterval = glitchInterval;
     }
 
     // --- GEOMETRIES ---
@@ -298,7 +301,7 @@ export const UltraHeroCanvas: React.FC = () => {
       mouse.current.x = (e.clientX / width) * 2 - 1;
       mouse.current.y = -(e.clientY / height) * 2 + 1;
     };
-    const handleClick = (e: MouseEvent) => {
+    const handleClick = () => {
       ripple.current = { time: clock.getElapsedTime(), x: mouse.current.x, y: mouse.current.y };
       fabricMat.uniforms.uRippleTime.value = ripple.current.time;
       fabricMat.uniforms.uRippleOrigin.value.set(ripple.current.x, ripple.current.y);
@@ -337,7 +340,7 @@ export const UltraHeroCanvas: React.FC = () => {
       fabricMat.uniforms.uColorB.value = paletteB;
       fabricMat.uniforms.uColorPhase.value = Math.abs(Math.sin(elapsed * 0.2));
 
-      // Morph Targets (8s per cycle)
+      // Morph Targets (10s cycle)
       const morphT = elapsed % 10.0;
       fabricMat.uniforms.uMorphTarget.value = Math.floor(morphT / 2.0);
       fabricMat.uniforms.uMorphProgress.value = (morphT % 2.0) / 2.0;
@@ -374,6 +377,7 @@ export const UltraHeroCanvas: React.FC = () => {
       window.removeEventListener('mousedown', handleClick);
       window.removeEventListener('scroll', handleScroll);
       cancelAnimationFrame(requestRef.current);
+      if ((window as any)._glitchInterval) clearInterval((window as any)._glitchInterval);
       renderer.dispose();
       fabricGeo.dispose();
       fabricMat.dispose();
@@ -383,7 +387,7 @@ export const UltraHeroCanvas: React.FC = () => {
       strand1.material.dispose();
       if(containerRef.current) containerRef.current.innerHTML = '';
     };
-  }, []);
+  }, [introFinished]);
 
   return (
     <div 
