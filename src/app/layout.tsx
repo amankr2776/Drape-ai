@@ -8,6 +8,7 @@ import Footer from '@/components/landing/footer';
 import ScrollToTop from '@/components/scroll-to-top';
 import { AppLoader } from '@/components/app-loader';
 import { CookieBanner } from '@/components/legal/cookie-banner';
+import { PushPermissionModal } from '@/components/notifications/push-permission-modal';
 
 export const metadata: Metadata = {
   title: 'DRAPE AI — Your Personal AI Fashion Stylist India',
@@ -67,6 +68,7 @@ export default function RootLayout({
         </main>
         <Footer />
         <CookieBanner />
+        <PushPermissionModal />
         <Toaster />
         <ScrollToTop />
       </body>

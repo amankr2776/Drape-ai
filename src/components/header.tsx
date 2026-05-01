@@ -20,6 +20,7 @@ import { Menu, X, Search, ShoppingBag, LogOut, Settings, History } from 'lucide-
 import { cn } from '@/lib/utils';
 import { AuthDrawer } from './auth-drawer';
 import { Input } from './ui/input';
+import { NotificationBell } from './notifications/notification-bell';
 
 const mainNav = [
   { href: '/', label: 'Home' },
@@ -99,6 +100,8 @@ export default function Header() {
                 {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
               </Button>
               
+              <NotificationBell />
+
               <Link href="/dashboard/wardrobe" className="hidden sm:flex">
                 <Button variant="ghost" size="icon" className="relative group hover:text-primary">
                   <ShoppingBag className="w-5 h-5" />

@@ -3,7 +3,7 @@
 import * as React from "react"
 import * as ToastPrimitives from "@radix-ui/react-toast"
 import { cva, type VariantProps } from "class-variance-authority"
-import { X } from "lucide-react"
+import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -25,14 +25,16 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-  "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-md border p-6 pr-8 shadow-2xl transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
+  "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-xl border p-6 pr-8 shadow-2xl transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-top-full data-[state=open]:sm:slide-in-from-bottom-full",
   {
     variants: {
       variant: {
         default: "bg-background/95 backdrop-blur-xl border-primary/20 text-foreground",
         destructive:
           "destructive group border-accent/50 bg-background text-accent shadow-[0_0_30px_rgba(196,84,90,0.2)]",
-        success: "border-primary/50 bg-background text-primary shadow-[0_0_30px_rgba(201,168,76,0.2)]",
+        success: "border-green-500/50 bg-background text-green-500 shadow-[0_0_30px_rgba(34,197,94,0.1)]",
+        warning: "border-primary/50 bg-background text-primary shadow-[0_0_30px_rgba(201,168,76,0.1)]",
+        info: "border-blue-500/50 bg-background text-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.1)]",
       },
     },
     defaultVariants: {
@@ -52,10 +54,40 @@ const Toast = React.forwardRef<
       className={cn(toastVariants({ variant }), className)}
       {...props}
     >
-      {props.children}
-      {/* Progress Bar Emulation */}
-      <div className="absolute bottom-0 left-0 h-[2px] w-full bg-primary/10">
-        <div className="h-full bg-primary/40 transition-all duration-[3000ms] group-data-[state=open]:w-0 group-data-[state=open]:animate-[toast-progress_3s_linear_forwards]" />
+      <div className="flex gap-4 w-full h-full">
+        <div className="shrink-0 flex items-center">
+          {variant === 'success' && <CheckCircle2 size={24} />}
+          {variant === 'destructive' && <AlertCircle size={24} />}
+          {variant === 'warning' && <AlertTriangle size={24} />}
+          {variant === 'info' && <Info size={24} />}
+          {variant === 'default' && <AlertCircle size={24} className="text-primary" />}
+        </div>
+        <div className="flex-1">
+          {props.children}
+        </div>
+      </div>
+
+      <ToastPrimitives.Close className="absolute right-2 top-2 rounded-md p-1 text-foreground/20 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100">
+        <X className="h-4 w-4" />
+      </ToastPrimitives.Close>
+
+      {/* Progress Bar Countdown */}
+      <div className="absolute bottom-0 left-0 h-[2px] w-full bg-foreground/5 overflow-hidden">
+        <div 
+          className={cn(
+            "h-full transition-all duration-[4000ms] ease-linear origin-left",
+            variant === 'success' ? "bg-green-500" : 
+            variant === 'destructive' ? "bg-accent" :
+            variant === 'warning' ? "bg-primary" :
+            variant === 'info' ? "bg-blue-500" : "bg-primary"
+          )}
+          style={{ 
+            animationName: 'toast-progress',
+            animationDuration: '4s',
+            animationFillMode: 'forwards',
+            animationTimingFunction: 'linear'
+          }}
+        />
       </div>
     </ToastPrimitives.Root>
   )
@@ -77,23 +109,7 @@ const ToastAction = React.forwardRef<
 ))
 ToastAction.displayName = ToastPrimitives.Action.displayName
 
-const ToastClose = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Close>,
-  React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close>
->(({ className, ...props }, ref) => (
-  <ToastPrimitives.Close
-    ref={ref}
-    className={cn(
-      "absolute right-2 top-2 rounded-md p-1 text-foreground/20 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100",
-      className
-    )}
-    toast-close=""
-    {...props}
-  >
-    <X className="h-4 w-4" />
-  </ToastPrimitives.Close>
-))
-ToastClose.displayName = ToastPrimitives.Close.displayName
+const ToastClose = ToastPrimitives.Close
 
 const ToastTitle = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Title>,
@@ -113,7 +129,7 @@ const ToastDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Description
     ref={ref}
-    className={cn("text-xs opacity-60 font-body", className)}
+    className={cn("text-xs opacity-60 font-body leading-relaxed mt-1", className)}
     {...props}
   />
 ))
