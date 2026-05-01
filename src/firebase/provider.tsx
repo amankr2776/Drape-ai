@@ -2,14 +2,11 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { FirebaseApp } from 'firebase/app';
-import { Auth, GoogleAuthProvider } from 'firebase/auth';
 import { Firestore } from 'firebase/firestore';
 
 interface FirebaseContextType {
   app?: FirebaseApp;
-  auth?: Auth;
   db?: Firestore;
-  googleProvider?: GoogleAuthProvider;
 }
 
 const FirebaseContext = createContext<FirebaseContextType | null>(null);
