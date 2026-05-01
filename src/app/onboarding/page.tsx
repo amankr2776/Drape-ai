@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -105,7 +104,7 @@ const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number; totalSt
     <div className="w-full max-w-2xl">
       <div className="h-[2px] w-full bg-border relative rounded-full overflow-hidden mb-4">
         <motion.div
-          className="absolute left-0 top-0 h-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]"
+          className="absolute left-0 top-0 h-full bg-primary shadow-gold-glow"
           initial={{ width: '0%' }}
           animate={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
           transition={{ duration: 0.8 }}
@@ -260,7 +259,7 @@ const StepMeasurements = ({ formData, updateFormData }: any) => {
                   onClick={() => updateFormData('bodySize', size)}
                   className={cn(
                     "h-16 rounded-xl border-2 transition-all font-headline text-xl",
-                    formData.bodySize === size ? "border-primary bg-primary/10 text-primary glow-gold" : "border-primary/10 bg-card/30 hover:border-primary/40"
+                    formData.bodySize === size ? "border-primary bg-primary/10 text-primary shadow-gold-glow" : "border-primary/10 bg-card/30 hover:border-primary/40"
                   )}
                 >
                   {size}
