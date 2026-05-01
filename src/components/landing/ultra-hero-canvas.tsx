@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 // --- VISUAL LAWS & CONSTANTS ---
 const MORPH_SEQUENCE = [0, 1, 2, 3, 4, 5]; // silk, pleats, spiral, inflate, origami, shatter
