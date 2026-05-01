@@ -160,6 +160,7 @@ export default function AnalyzePage() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 className="absolute inset-0 z-30 pointer-events-none"
+                style={{ cursor: 'auto' }}
               />
             )}
           </AnimatePresence>

@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -40,6 +39,7 @@
 @layer base {
   * {
     @apply border-border;
+    cursor: auto;
   }
   body {
     @apply bg-background text-foreground;
@@ -56,6 +56,11 @@
   /* Micro-interactions */
   button:active, .btn-active:active {
     @apply scale-[0.97] transition-transform;
+  }
+
+  /* Interactive Cursors */
+  a, button, [role="button"], select, input[type="submit"], input[type="button"], label {
+    cursor: pointer !important;
   }
 }
 
@@ -82,8 +87,7 @@
   to { width: 0%; }
 }
 
-@media (pointer: fine) {
-  body {
-    cursor: none;
-  }
+canvas {
+  pointer-events: none;
+  cursor: auto;
 }
