@@ -59,6 +59,9 @@ const MOCK_NOTIFICATIONS: Notification[] = [
 export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
 
+  // Note: Automation alerts (price drops, matches, etc.) should only be added to state here.
+  // No toast triggers for these automated events as per new requirements.
+
   const unreadCount = useMemo(() => 
     notifications.filter(n => !n.isRead).length
   , [notifications]);

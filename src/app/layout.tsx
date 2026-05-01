@@ -10,6 +10,7 @@ import { AppLoader } from '@/components/app-loader';
 import { CookieBanner } from '@/components/legal/cookie-banner';
 import { PushPermissionModal } from '@/components/notifications/push-permission-modal';
 import { ChatWidget } from '@/components/chat-widget';
+import { FirebaseClientProvider } from '@/firebase';
 
 export const metadata: Metadata = {
   title: {
@@ -80,18 +81,20 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={cn('font-body antialiased bg-background text-foreground min-h-screen flex flex-col selection:bg-primary/30 selection:text-primary')}>
-        <AppLoader />
-        <CustomCursor />
-        <Header />
-        <main className="flex-grow relative z-10">
-          {children}
-        </main>
-        <Footer />
-        <CookieBanner />
-        <PushPermissionModal />
-        <ChatWidget />
-        <Toaster />
-        <ScrollToTop />
+        <FirebaseClientProvider>
+          <AppLoader />
+          <CustomCursor />
+          <Header />
+          <main className="flex-grow relative z-10">
+            {children}
+          </main>
+          <Footer />
+          <CookieBanner />
+          <PushPermissionModal />
+          <ChatWidget />
+          <Toaster />
+          <ScrollToTop />
+        </FirebaseClientProvider>
       </body>
     </html>
   );

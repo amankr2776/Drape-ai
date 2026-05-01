@@ -5,9 +5,12 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { AuthDrawer } from '@/components/auth/auth-drawer';
+import { useUser } from '@/firebase';
 
 export default function Hero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { user } = useUser();
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -137,9 +140,17 @@ export default function Hero() {
         </motion.p>
 
         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-6 justify-center">
-          <Button asChild size="lg" className="h-14 px-10 rounded-none font-headline text-xl tracking-widest transition-transform hover:scale-105">
-            <Link href="/onboarding">Analyze My Style</Link>
-          </Button>
+          {user ? (
+            <Button asChild size="lg" className="h-14 px-10 rounded-none font-headline text-xl tracking-widest transition-transform hover:scale-105">
+              <Link href="/onboarding">Analyze My Style</Link>
+            </Button>
+          ) : (
+            <AuthDrawer>
+              <Button size="lg" className="h-14 px-10 rounded-none font-headline text-xl tracking-widest transition-transform hover:scale-105 bg-primary text-primary-foreground">
+                Analyze My Style
+              </Button>
+            </AuthDrawer>
+          )}
           <Button asChild variant="outline" size="lg" className="h-14 px-10 rounded-none border-primary text-primary font-headline text-xl tracking-widest hover:bg-primary/10 transition-transform hover:scale-105">
             <Link href="/how-it-works">See How It Works</Link>
           </Button>
