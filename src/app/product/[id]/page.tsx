@@ -77,12 +77,12 @@ const product = {
   ]
 };
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  // In a real app, you'd fetch product data based on params.id
+export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(params);
   const [mainImage, setMainImage] = React.useState(product.images[0]);
 
   return (
-    <div className="bg-background text-foreground min-h-screen">
+    <div className="bg-background text-foreground min-h-screen pt-24">
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumbs and Back Navigation */}
         <div className="flex justify-between items-center mb-6">
@@ -103,7 +103,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         <main className="grid grid-cols-1 lg:grid-cols-5 gap-12">
           {/* Left Column: Images */}
           <div className="lg:col-span-3">
-            <div className="sticky top-8">
+            <div className="sticky top-24">
               <div className="group relative aspect-[2/3] w-full overflow-hidden rounded-lg border border-border">
                 <Image
                   src={mainImage}
@@ -131,8 +131,8 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           <div className="lg:col-span-2 space-y-8">
             {/* Product Info */}
             <div>
-              <Badge variant="secondary">{product.brand}</Badge>
-              <h1 className="font-headline text-4xl mt-2">{product.name}</h1>
+              <Badge variant="secondary" className="mb-2">{product.brand}</Badge>
+              <h1 className="font-headline text-5xl mt-2 text-primary">{product.name}</h1>
               <div className="flex items-center gap-4 mt-4">
                 <div className="flex items-center">
                   <Star className="w-5 h-5 text-primary fill-current" />
@@ -153,14 +153,14 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
             {/* Sizes */}
             <div>
-              <h3 className="text-lg font-headline mb-2">Select Size</h3>
-              <div className="flex gap-2">
+              <h3 className="text-lg font-headline mb-4">Select Size</h3>
+              <div className="flex gap-3">
                 {product.sizes.map(size => (
                   <Button
                     key={size.name}
                     variant={size.available ? "outline" : "secondary"}
                     disabled={!size.available}
-                    className="w-12 h-12 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-14 h-14 font-bold text-lg disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     {size.name}
                   </Button>
@@ -169,37 +169,44 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             </div>
             
             {/* CTA Buttons */}
-            <div className="space-y-3">
-              <Button size="lg" className="w-full font-headline text-lg tracking-wider">Buy on {product.platform}</Button>
-              <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" size="lg"><Heart className="mr-2" /> Save to Wardrobe</Button>
-                <Button variant="outline" size="lg"><Share2 className="mr-2" /> Share Look</Button>
+            <div className="space-y-4">
+              <Button size="lg" className="w-full h-16 font-headline text-2xl tracking-widest bg-primary text-primary-foreground hover:glow-gold">
+                Buy on {product.platform}
+              </Button>
+              <div className="grid grid-cols-2 gap-4">
+                <Button variant="outline" size="lg" className="h-14 border-primary/20"><Heart className="mr-2 w-5 h-5" /> Save Look</Button>
+                <Button variant="outline" size="lg" className="h-14 border-primary/20"><Share2 className="mr-2 w-5 h-5" /> Share</Button>
               </div>
             </div>
 
-            <Separator />
+            <Separator className="bg-primary/10" />
             
             {/* AI Style Note */}
-            <Card className="bg-primary/5 border-primary/20">
+            <Card className="bg-primary/5 border-primary/10 overflow-hidden relative">
+              <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-primary">
-                  <TrendingUp />
-                  AI Style Note
+                <CardTitle className="flex items-center gap-3 text-primary text-2xl">
+                  <TrendingUp className="w-6 h-6" />
+                  Atelier Curation
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-foreground/90 italic">"{product.aiNote.reason}"</p>
+              <CardContent className="space-y-6">
+                <p className="text-foreground/80 italic text-lg leading-relaxed">"{product.aiNote.reason}"</p>
                 <div>
-                  <div className="flex justify-between items-center mb-1">
-                    <h4 className="text-sm font-semibold">Skin Tone Compatibility</h4>
-                    <span className="text-sm font-bold text-primary">{product.aiNote.skinToneScore}%</span>
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="text-sm font-headline uppercase tracking-widest text-foreground/50">Harmony Score</h4>
+                    <span className="text-sm font-bold text-primary">{product.aiNote.skinToneScore}% Match</span>
                   </div>
-                  <Progress value={product.aiNote.skinToneScore} className="h-2" />
+                  <Progress value={product.aiNote.skinToneScore} className="h-1.5" />
                 </div>
                  <div>
-                  <h4 className="text-sm font-semibold mb-2">Occasion Suitability</h4>
+                  <h4 className="text-sm font-headline uppercase tracking-widest text-foreground/50 mb-3">Best Occasions</h4>
                    <div className="flex flex-wrap gap-2">
-                     {product.aiNote.occasions.map(occ => <Badge key={occ} variant="outline">{occ}</Badge>)}
+                     {product.aiNote.occasions.map(occ => (
+                       <Badge key={occ} variant="secondary" className="bg-primary/10 text-primary border-primary/5">
+                         {occ}
+                       </Badge>
+                     ))}
                    </div>
                  </div>
               </CardContent>
@@ -207,29 +214,34 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           </div>
         </main>
         
-        <Separator className="my-16" />
+        <Separator className="my-24 bg-primary/10" />
 
         {/* Price Comparison */}
         <section>
-          <h2 className="text-4xl font-headline text-center mb-8">Find a Better Price</h2>
-          <Card className="max-w-4xl mx-auto">
+          <h2 className="text-5xl font-headline text-center mb-12 text-primary">Marketplace Radar</h2>
+          <Card className="max-w-4xl mx-auto bg-card/40 border-primary/10 overflow-hidden">
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Store</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+              <TableHeader className="bg-primary/5">
+                <TableRow className="border-primary/10">
+                  <TableHead className="text-xs uppercase tracking-widest font-bold">Store</TableHead>
+                  <TableHead className="text-xs uppercase tracking-widest font-bold">Offer Price</TableHead>
+                  <TableHead className="text-right text-xs uppercase tracking-widest font-bold">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {product.priceComparison.sort((a,b) => a.price - b.price).map((item, index) => (
-                  <TableRow key={item.platform} className={index === 0 ? "border-primary/50 border-2" : ""}>
-                    <TableCell className="font-medium flex items-center gap-2">
-                        <Image src={item.logo} alt={item.platform} width={24} height={24}/> {item.platform}
-                        {index === 0 && <Badge className="ml-auto">Best Deal</Badge>}
+                  <TableRow key={item.platform} className={index === 0 ? "bg-primary/5 border-primary/20" : "border-primary/5"}>
+                    <TableCell className="font-medium flex items-center gap-4 py-6">
+                        <Image src={item.logo} alt={item.platform} width={24} height={24} className="grayscale brightness-150" /> 
+                        <span className="font-headline text-xl">{item.platform}</span>
+                        {index === 0 && <Badge className="bg-primary text-primary-foreground text-[10px] ml-2">Best Deal</Badge>}
                     </TableCell>
-                    <TableCell>₹{item.price.toLocaleString('en-IN')}</TableCell>
-                    <TableCell className="text-right"><Button asChild size="sm" variant={index === 0 ? "default" : "outline"}><a href={item.url} target="_blank" rel="noopener noreferrer">Go to Store</a></Button></TableCell>
+                    <TableCell className="font-bold text-lg">₹{item.price.toLocaleString('en-IN')}</TableCell>
+                    <TableCell className="text-right">
+                      <Button asChild size="sm" variant={index === 0 ? "default" : "outline"} className="font-headline tracking-widest">
+                        <a href={item.url} target="_blank" rel="noopener noreferrer">Visit Store</a>
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -237,53 +249,61 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           </Card>
         </section>
 
-        <Separator className="my-16" />
+        <Separator className="my-24 bg-primary/10" />
 
         {/* Reviews */}
         <section id="reviews">
-          <h2 className="text-4xl font-headline text-center mb-8">What Buyers Are Saying</h2>
+          <h2 className="text-5xl font-headline text-center mb-12 text-primary">Community Voice</h2>
           <div className="max-w-4xl mx-auto space-y-6">
             {product.reviews.map(review => (
-              <Card key={review.id}>
-                <CardContent className="p-6">
-                  <div className="flex items-center mb-2">
-                    <div className="flex items-center">
+              <Card key={review.id} className="bg-card/20 border-primary/5">
+                <CardContent className="p-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-5 h-5 ${i < review.rating ? 'text-primary fill-current' : 'text-foreground/30'}`} />
+                        <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-primary fill-current' : 'text-foreground/10'}`} />
                       ))}
                     </div>
-                    {review.verified && <Badge variant="secondary" className="ml-4 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Verified Purchase</Badge>}
+                    {review.verified && <Badge variant="outline" className="text-[10px] border-green-500/20 text-green-500 uppercase tracking-widest"><CheckCircle2 className="w-3 h-3 mr-1" /> Verified Member</Badge>}
                   </div>
-                  <p className="italic text-foreground/80">"{review.text}"</p>
-                  <p className="text-right mt-2 font-semibold text-sm">- {review.name}</p>
+                  <p className="text-lg italic text-foreground/70 leading-relaxed font-body">"{review.text}"</p>
+                  <p className="text-right mt-6 text-sm uppercase tracking-widest text-foreground/40">— {review.name}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
         </section>
 
-        <Separator className="my-16" />
+        <Separator className="my-24 bg-primary/10" />
 
         {/* Similar Products */}
-        <section>
-          <h2 className="text-4xl font-headline text-center mb-8">You Might Also Like</h2>
+        <section className="mb-20">
+          <h2 className="text-5xl font-headline text-center mb-12 text-primary">Atelier Recommendations</h2>
             <Carousel opts={{ align: "start", loop: true }} className="w-full">
               <CarouselContent>
                 {product.similarProducts.map((item) => (
                   <CarouselItem key={item.id} className="md:basis-1/2 lg:basis-1/4">
-                    <div className="p-1">
+                    <div className="p-2">
                       <Link href={item.url}>
-                        <Card className="group overflow-hidden">
+                        <Card className="group overflow-hidden bg-card/40 border-primary/5 hover:border-primary/20 transition-all">
                           <CardContent className="p-0">
                             <div className="relative aspect-[2/3]">
-                              <Image src={item.image} alt={item.name} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
-                              <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button size="icon" variant="secondary" className="h-9 w-9 rounded-full bg-background/50 hover:bg-background/80"><Heart className="h-4 w-4" /></Button>
+                              <Image 
+                                src={item.image} 
+                                alt={item.name} 
+                                fill 
+                                className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                                data-ai-hint="fashion editorial"
+                              />
+                              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button size="icon" variant="secondary" className="h-10 w-10 rounded-full bg-background/80 backdrop-blur hover:bg-primary hover:text-primary-foreground">
+                                  <Heart className="h-5 w-5" />
+                                </Button>
                               </div>
                             </div>
-                            <div className="p-4">
-                              <h3 className="font-headline text-lg truncate">{item.name}</h3>
-                              <p className="font-bold text-primary mt-1">{item.price}</p>
+                            <div className="p-6">
+                              <h3 className="font-headline text-xl truncate group-hover:text-primary transition-colors">{item.name}</h3>
+                              <p className="font-bold text-primary mt-2">{item.price}</p>
                             </div>
                           </CardContent>
                         </Card>
@@ -292,8 +312,8 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="hidden sm:flex" />
-              <CarouselNext className="hidden sm:flex" />
+              <CarouselPrevious className="hidden sm:flex border-primary/10 hover:bg-primary hover:text-primary-foreground" />
+              <CarouselNext className="hidden sm:flex border-primary/10 hover:bg-primary hover:text-primary-foreground" />
             </Carousel>
         </section>
       </div>
