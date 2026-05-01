@@ -23,6 +23,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useSubscription } from '@/hooks/use-subscription';
 import { PaymentModal } from '@/components/subscription/payment-modal';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const PLANS = [
   {
