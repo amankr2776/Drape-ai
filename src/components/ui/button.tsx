@@ -41,6 +41,9 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, loading = false, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
+    
+    // When using asChild (Slot), we must pass exactly one child element.
+    // We move the loading spinner logic to only apply when not using asChild to prevent Slot from receiving multiple children.
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }), loading && "relative !text-transparent")}
@@ -48,12 +51,18 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={props.disabled || loading}
         {...props}
       >
-        {loading && (
-          <div className="absolute inset-0 flex items-center justify-center text-current">
-            <Loader2 className="h-5 w-5 animate-spin" />
-          </div>
+        {asChild ? (
+          children
+        ) : (
+          <>
+            {loading && (
+              <div className="absolute inset-0 flex items-center justify-center text-current">
+                <Loader2 className="h-5 w-5 animate-spin" />
+              </div>
+            )}
+            {children}
+          </>
         )}
-        {children}
       </Comp>
     )
   }
