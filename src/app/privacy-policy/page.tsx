@@ -1,6 +1,7 @@
 'use client';
 
 import { LegalLayout } from '@/components/legal/legal-layout';
+import Link from 'next/link';
 
 const sections = [
   { id: 'introduction', title: '1. Introduction' },
