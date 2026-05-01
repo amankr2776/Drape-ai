@@ -1,4 +1,5 @@
-import type { Metadata } from 'next';
+
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
@@ -9,8 +10,40 @@ import ScrollToTop from '@/components/scroll-to-top';
 import { AppLoader } from '@/components/app-loader';
 
 export const metadata: Metadata = {
-  title: 'DRAPE AI | Luxury Personalized Fashion',
-  description: 'Experience high-fashion editorial styling powered by advanced AI body intelligence and skin tone harmony.',
+  title: 'DRAPE AI — Your Personal AI Fashion Stylist India',
+  description: 'Get personalized outfit recommendations based on your body shape and skin tone. Compare prices on Amazon, Flipkart & Meesho.',
+  keywords: ['fashion', 'AI stylist', 'Indian fashion', 'body shape analysis', 'skin tone harmony', 'luxury fashion'],
+  authors: [{ name: 'DRAPE AI Team' }],
+  openGraph: {
+    title: 'DRAPE AI — Luxury AI Fashion Styling',
+    description: 'AI that reads your body. Styles your soul.',
+    url: 'https://drape.ai',
+    siteName: 'DRAPE AI',
+    images: [
+      {
+        url: 'https://picsum.photos/seed/drape-og/1200/630',
+        width: 1200,
+        height: 630,
+        alt: 'DRAPE AI Preview',
+      },
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'DRAPE AI — Personal AI Stylist',
+    description: 'Breathtaking outfit recommendations powered by body intelligence.',
+    images: ['https://picsum.photos/seed/drape-twitter/1200/630'],
+  },
+  manifest: '/manifest.json',
+};
+
+export const viewport: Viewport = {
+  themeColor: '#C9A84C',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
