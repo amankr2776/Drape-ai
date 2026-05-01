@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, X } from 'lucide-react';
+import Link from 'next/link';
 
 export function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
