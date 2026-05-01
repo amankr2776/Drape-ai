@@ -8,9 +8,15 @@ export const CustomCursor = () => {
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
 
-  const springConfig = { damping: 25, stiffness: 200 };
-  const cursorXSpring = useSpring(cursorX, springConfig);
-  const cursorYSpring = useSpring(cursorY, springConfig);
+  // Define spring configurations at the top level
+  const innerSpringConfig = { damping: 25, stiffness: 200 };
+  const outerSpringConfig = { damping: 40, stiffness: 150 };
+
+  // Initialize springs as hooks at the top level
+  const cursorXSpring = useSpring(cursorX, innerSpringConfig);
+  const cursorYSpring = useSpring(cursorY, innerSpringConfig);
+  const cursorXOuterSpring = useSpring(cursorX, outerSpringConfig);
+  const cursorYOuterSpring = useSpring(cursorY, outerSpringConfig);
 
   useEffect(() => {
     setMounted(true);
@@ -34,8 +40,8 @@ export const CustomCursor = () => {
       <motion.div
         className="fixed top-0 left-0 w-3 h-3 bg-primary rounded-full pointer-events-none z-[9999] mix-blend-difference"
         style={{
-          translateX: cursorXSpring,
-          translateY: cursorYSpring,
+          x: cursorXSpring,
+          y: cursorYSpring,
           translateX: '-50%',
           translateY: '-50%',
         }}
@@ -44,8 +50,8 @@ export const CustomCursor = () => {
       <motion.div
         className="fixed top-0 left-0 w-8 h-8 border border-primary/50 rounded-full pointer-events-none z-[9998]"
         style={{
-          translateX: useSpring(cursorX, { damping: 40, stiffness: 150 }),
-          translateY: useSpring(cursorY, { damping: 40, stiffness: 150 }),
+          x: cursorXOuterSpring,
+          y: cursorYOuterSpring,
           translateX: '-50%',
           translateY: '-50%',
         }}
