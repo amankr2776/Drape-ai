@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 /**
  * @fileOverview UltraHeroCanvas - The "Living Atmosphere" of DRAPE AI.
@@ -34,6 +35,7 @@ interface Point {
 export const UltraHeroCanvas: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
+  const isMobile = useIsMobile();
   
   // Simulation State Refs
   const state = useRef({
@@ -65,7 +67,6 @@ export const UltraHeroCanvas: React.FC = () => {
     let width = window.innerWidth;
     let height = window.innerHeight;
     const dpr = window.devicePixelRatio || 1;
-    const isMobile = width < 768;
 
     // --- INITIALIZATION ---
     const init = () => {
@@ -77,15 +78,17 @@ export const UltraHeroCanvas: React.FC = () => {
 
       // 1. Initialize Cloth Points
       const points: Point[] = [];
+      const clothGridCols = isMobile ? 40 : CLOTH_COLS;
+      const clothGridRows = isMobile ? 60 : CLOTH_ROWS;
       const gridW = width * 0.6;
       const gridH = height * 0.8;
-      const spacingX = gridW / CLOTH_COLS;
-      const spacingY = gridH / CLOTH_ROWS;
+      const spacingX = gridW / clothGridCols;
+      const spacingY = gridH / clothGridRows;
       const startX = (width - gridW) / 2;
       const startY = (height - gridH) / 2;
 
-      for (let j = 0; j <= CLOTH_ROWS; j++) {
-        for (let i = 0; i <= CLOTH_COLS; i++) {
+      for (let j = 0; j <= clothGridRows; j++) {
+        for (let i = 0; i <= clothGridCols; i++) {
           const x = startX + i * spacingX;
           const y = startY + j * spacingY;
           points.push({ x, y, px: x, py: y, rx: x, ry: y, vx: 0, vy: 0 });
@@ -95,7 +98,8 @@ export const UltraHeroCanvas: React.FC = () => {
 
       // 2. Initialize Particles
       const p = state.current.particles;
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const pCount = isMobile ? 800 : PARTICLE_COUNT;
+      for (let i = 0; i < pCount; i++) {
         const idx = i * 8;
         p[idx] = Math.random() * width;     // x
         p[idx+1] = Math.random() * height; // y
@@ -155,13 +159,16 @@ export const UltraHeroCanvas: React.FC = () => {
       // Update Intro
       state.current.introProgress = Math.min(1, t / 5000);
 
+      const clothGridCols = isMobile ? 40 : CLOTH_COLS;
+      const clothGridRows = isMobile ? 60 : CLOTH_ROWS;
+
       // Physics Loop: Cloth
       for (let i = 0; i < points.length; i++) {
         const p = points[i];
-        const col = i % (CLOTH_COLS + 1);
-        const row = Math.floor(i / (CLOTH_COLS + 1));
-        const ni = col / CLOTH_COLS;
-        const nj = row / CLOTH_ROWS;
+        const col = i % (clothGridCols + 1);
+        const row = Math.floor(i / (clothGridCols + 1));
+        const ni = col / clothGridCols;
+        const nj = row / clothGridRows;
 
         // ACCELERATION FORCES
         let ax = 0, ay = 0;
@@ -225,7 +232,8 @@ export const UltraHeroCanvas: React.FC = () => {
       }
 
       // Physics Loop: Particles
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const pCount = isMobile ? 800 : PARTICLE_COUNT;
+      for (let i = 0; i < pCount; i++) {
         const idx = i * 8;
         const pState = particles[idx+7];
         
@@ -291,7 +299,9 @@ export const UltraHeroCanvas: React.FC = () => {
       drawParticles(ctx, palette.primary);
 
       // Layer 7: Custom Cursor
-      drawCursor(ctx, palette.primary);
+      if (!isMobile) {
+        drawCursor(ctx, palette.primary);
+      }
 
       // Atmospheric Fog
       const grad = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width);
@@ -308,7 +318,8 @@ export const UltraHeroCanvas: React.FC = () => {
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
       ctx.globalAlpha = 0.1 * state.current.introProgress;
-      for (let i = 0; i < 8; i++) {
+      const rayCount = isMobile ? 4 : 8;
+      for (let i = 0; i < rayCount; i++) {
         const angle = state.current.time * 0.0001 + (i * Math.PI / 4);
         const x = width / 2 + Math.cos(angle) * width;
         const y = -100;
@@ -327,16 +338,22 @@ export const UltraHeroCanvas: React.FC = () => {
 
     const drawCloth = (ctx: CanvasRenderingContext2D, pal: any) => {
       const pts = state.current.points;
+      if (!pts.length) return;
       ctx.save();
       ctx.globalAlpha = 0.6 * state.current.introProgress * (1 - state.current.scroll);
       
-      for (let j = 0; j < CLOTH_ROWS; j++) {
-        for (let i = 0; i < CLOTH_COLS; i++) {
-          const idx = j * (CLOTH_COLS + 1) + i;
+      const clothGridCols = isMobile ? 40 : CLOTH_COLS;
+      const clothGridRows = isMobile ? 60 : CLOTH_ROWS;
+
+      for (let j = 0; j < clothGridRows; j++) {
+        for (let i = 0; i < clothGridCols; i++) {
+          const idx = j * (clothGridCols + 1) + i;
           const p1 = pts[idx];
           const p2 = pts[idx + 1];
-          const p3 = pts[idx + CLOTH_COLS + 2];
-          const p4 = pts[idx + CLOTH_COLS + 1];
+          const p3 = pts[idx + clothGridCols + 2];
+          const p4 = pts[idx + clothGridCols + 1];
+
+          if (!p1 || !p2 || !p3 || !p4) continue;
 
           // Iridescent shading approximation
           const dist = Math.abs(p1.y - p1.ry);
@@ -363,9 +380,10 @@ export const UltraHeroCanvas: React.FC = () => {
 
     const drawParticles = (ctx: CanvasRenderingContext2D, color: string) => {
       const p = state.current.particles;
+      const pCount = isMobile ? 800 : PARTICLE_COUNT;
       ctx.fillStyle = color;
       ctx.globalAlpha = 0.8;
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
+      for (let i = 0; i < pCount; i++) {
         const idx = i * 8;
         ctx.beginPath();
         ctx.arc(p[idx], p[idx+1], p[idx+6], 0, Math.PI * 2);
@@ -445,14 +463,14 @@ export const UltraHeroCanvas: React.FC = () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [isMobile]);
 
   return (
     <div ref={containerRef} className="absolute inset-0 z-0 overflow-hidden bg-[#0A0A0F]">
       <canvas 
         ref={mainCanvasRef} 
         className="block w-full h-full"
-        style={{ cursor: 'none' }}
+        style={{ cursor: isMobile ? 'auto' : 'none' }}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background pointer-events-none" />
     </div>
