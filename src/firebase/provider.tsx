@@ -6,10 +6,10 @@ import { Auth, GoogleAuthProvider } from 'firebase/auth';
 import { Firestore } from 'firebase/firestore';
 
 interface FirebaseContextType {
-  app: FirebaseApp;
-  auth: Auth;
-  db: Firestore;
-  googleProvider: GoogleAuthProvider;
+  app?: FirebaseApp;
+  auth?: Auth;
+  db?: Firestore;
+  googleProvider?: GoogleAuthProvider;
 }
 
 const FirebaseContext = createContext<FirebaseContextType | null>(null);
