@@ -29,14 +29,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-background">
-      {/* Premium Static Background Gradient */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[#0A0A0F]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 blur-[120px] rounded-full" />
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0A0A0F] to-transparent" />
-      </div>
-      
+    <section className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-transparent">
       <motion.div
         className="relative z-10 text-center px-4 max-w-6xl pointer-events-none"
         variants={containerVariants}
