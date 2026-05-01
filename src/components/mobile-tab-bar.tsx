@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -33,7 +32,10 @@ export function MobileTabBar() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-[72px] bg-obsidian-2/80 backdrop-blur-xl border-t border-border lg:hidden z-[100] flex items-center justify-around px-16 pb-safe">
+    <div 
+      className="fixed bottom-0 left-0 right-0 h-[64px] bg-obsidian/80 backdrop-blur-xl border-t border-border lg:hidden flex items-center justify-around px-4 pb-safe shadow-[0_-4px_16px_rgba(0,0,0,0.4)]"
+      style={{ zIndex: 'var(--z-navbar)' }}
+    >
       {tabs.map((tab) => {
         const isActive = pathname === tab.href || (tab.href !== '/' && pathname.startsWith(tab.href));
         const Icon = tab.icon;
@@ -44,15 +46,15 @@ export function MobileTabBar() {
               key={tab.href}
               href={tab.href}
               onClick={handleTap}
-              className="relative -top-16 flex flex-col items-center"
+              className="relative -top-6 flex flex-col items-center"
             >
               <motion.div 
                 whileTap={{ scale: 0.9 }}
-                className="w-64 h-64 rounded-full bg-gold shadow-gold flex items-center justify-center text-obsidian border-4 border-obsidian"
+                className="w-14 h-14 rounded-full bg-gold shadow-gold-glow flex items-center justify-center text-obsidian border-4 border-obsidian"
               >
-                <Icon size={32} weight="bold" />
+                <Icon size={28} weight="bold" />
               </motion.div>
-              <span className="text-[10px] mt-4 font-bold text-gold uppercase tracking-widest">{tab.label}</span>
+              <span className="text-[9px] mt-1 font-bold text-gold uppercase tracking-widest">{tab.label}</span>
             </Link>
           );
         }
@@ -63,7 +65,7 @@ export function MobileTabBar() {
             href={tab.href}
             onClick={handleTap}
             className={cn(
-              "flex flex-col items-center gap-4 transition-all relative py-8 px-12",
+              "flex flex-col items-center gap-1 transition-all relative py-2 px-3",
               isActive ? "text-gold" : "text-ivory-3"
             )}
           >
@@ -73,16 +75,16 @@ export function MobileTabBar() {
             >
               <Icon size={24} weight={isActive ? "fill" : "regular"} />
               {tab.label === 'Wishlist' && wishlist.length > 0 && (
-                <span className="absolute -top-2 -right-2 w-14 h-14 bg-rose text-white text-[8px] font-bold rounded-full flex items-center justify-center border border-obsidian">
+                <span className="badge-standard flex items-center justify-center w-[14px] h-[14px] bg-rose text-white text-[8px] font-bold rounded-full border border-obsidian">
                   {wishlist.length}
                 </span>
               )}
             </motion.div>
-            <span className="text-[10px] font-medium uppercase tracking-wider">{tab.label}</span>
+            <span className="text-[9px] font-medium uppercase tracking-wider">{tab.label}</span>
             {isActive && (
               <motion.div
                 layoutId="tab-pill"
-                className="absolute -top-[1px] w-24 h-2 bg-gold rounded-full"
+                className="absolute -top-[2px] w-6 h-0.5 bg-gold rounded-full"
               />
             )}
           </Link>
