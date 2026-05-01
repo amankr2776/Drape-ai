@@ -10,9 +10,8 @@ import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment';
 
 /**
- * @fileOverview DrapeHeroCanvas - A cinematic Three.js WebGL experience.
- * Inspired by activetheory.net, featuring floating glowing objects, 
- * particle trails, and intense golden bloom.
+ * @fileOverview DrapeHeroCanvas - A cinematic Three.js experience inspired by activetheory.net.
+ * Features a glowing gold centerpiece, reactive particle trails, and volumetric light shafts.
  */
 
 export const DrapeHeroCanvas: React.FC = () => {
@@ -21,17 +20,21 @@ export const DrapeHeroCanvas: React.FC = () => {
   const composerRef = useRef<EffectComposer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0, vx: 0, vy: 0, lastX: 0, lastY: 0 });
   const clockRef = useRef(new THREE.Clock());
-  const requestRef = useRef<number>(0);
+  const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0, vX: 0, vY: 0, lastX: 0, lastY: 0 });
+  const animIdRef = useRef<number>(0);
 
   // Scene Objects
-  const gemRef = useRef<THREE.Group | null>(null);
-  const innerRingRef = useRef<THREE.Mesh | null>(null);
-  const outerRingRef = useRef<THREE.Mesh | null>(null);
-  const particlesRef = useRef<THREE.Points | null>(null);
-  const ribbonRef = useRef<THREE.Points | null>(null);
+  const gemGroup = useRef<THREE.Group | null>(null);
+  const innerRing = useRef<THREE.Mesh | null>(null);
+  const outerRing = useRef<THREE.Mesh | null>(null);
+  const particles = useRef<THREE.Points | null>(null);
+  const particleVelocities = useRef<Float32Array | null>(null);
+  const streamParticles = useRef<THREE.Points | null>(null);
   const secondaryObjects = useRef<THREE.Mesh[]>([]);
+  const lightColumns = useRef<THREE.Mesh[]>([]);
+  const starField = useRef<THREE.Points | null>(null);
+  const keyLight = useRef<THREE.PointLight | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -56,7 +59,7 @@ export const DrapeHeroCanvas: React.FC = () => {
     camera.position.z = 8;
     cameraRef.current = camera;
 
-    // --- ENVIRONMENT MAP ---
+    // --- ENVIRONMENT ---
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
 
@@ -78,20 +81,22 @@ export const DrapeHeroCanvas: React.FC = () => {
     const ambientLight = new THREE.AmbientLight(0xC9A84C, 0.1);
     scene.add(ambientLight);
 
-    const pointLight1 = new THREE.PointLight(0xC9A84C, 3.0, 10);
-    pointLight1.position.set(2, 2, 3);
-    scene.add(pointLight1);
+    const light1 = new THREE.PointLight(0xC9A84C, 0, 10); // Animated intensity
+    light1.position.set(2, 2, 3);
+    scene.add(light1);
+    keyLight.current = light1;
 
-    const pointLight2 = new THREE.PointLight(0xC4545A, 1.5, 10);
-    pointLight2.position.set(-3, -1, 2);
-    scene.add(pointLight2);
+    const light2 = new THREE.PointLight(0xC4545A, 1.5, 10);
+    light2.position.set(-3, -1, 2);
+    scene.add(light2);
 
-    const backlight = new THREE.PointLight(0xFFFFFF, 0.5, 15);
-    backlight.position.set(0, 5, -2);
-    scene.add(backlight);
+    const light3 = new THREE.PointLight(0xFFFFFF, 0.5, 15);
+    light3.position.set(0, 5, -2);
+    scene.add(light3);
 
-    // --- HERO CENTERPIECE (GEM) ---
-    const gemGroup = new THREE.Group();
+    // --- HERO CENTERPIECE ---
+    const gem = new THREE.Group();
+    gem.scale.setScalar(0);
     const gemGeo = new THREE.IcosahedronGeometry(0.9, 1);
     const gemMat = new THREE.MeshPhysicalMaterial({
       color: 0xC9A84C,
@@ -102,64 +107,64 @@ export const DrapeHeroCanvas: React.FC = () => {
       thickness: 1.0,
     });
     const gemMesh = new THREE.Mesh(gemGeo, gemMat);
-    gemGroup.add(gemMesh);
+    gem.add(gemMesh);
 
-    const gemWire = new THREE.Mesh(
-      gemGeo,
-      new THREE.MeshBasicMaterial({ color: 0xC9A84C, wireframe: true, opacity: 0.15, transparent: true })
-    );
-    gemWire.scale.setScalar(1.01);
-    gemGroup.add(gemWire);
-    scene.add(gemGroup);
-    gemRef.current = gemGroup;
+    const wireMat = new THREE.MeshBasicMaterial({ color: 0xC9A84C, wireframe: true, opacity: 0.15, transparent: true });
+    const wireMesh = new THREE.Mesh(gemGeo, wireMat);
+    wireMesh.scale.setScalar(1.01);
+    gem.add(wireMesh);
+    scene.add(gem);
+    gemGroup.current = gem;
 
     // --- RINGS ---
     const innerRingGeo = new THREE.TorusGeometry(1.1, 0.008, 3, 80);
-    const innerRingMat = new THREE.MeshBasicMaterial({ color: 0xC9A84C, opacity: 0.7, transparent: true });
-    const innerRing = new THREE.Mesh(innerRingGeo, innerRingMat);
-    scene.add(innerRing);
-    innerRingRef.current = innerRing;
+    const innerRingMat = new THREE.MeshBasicMaterial({ color: 0xC9A84C, opacity: 0, transparent: true });
+    const iRing = new THREE.Mesh(innerRingGeo, innerRingMat);
+    scene.add(iRing);
+    innerRing.current = iRing;
 
     const outerRingGeo = new THREE.TorusGeometry(1.8, 0.004, 8, 100);
-    const outerRingMat = new THREE.MeshBasicMaterial({ color: 0xC4545A, opacity: 0.5, transparent: true });
-    const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
-    outerRing.rotation.x = Math.PI / 4;
-    scene.add(outerRing);
-    outerRingRef.current = outerRing;
+    const outerRingMat = new THREE.MeshBasicMaterial({ color: 0xC4545A, opacity: 0, transparent: true });
+    const oRing = new THREE.Mesh(outerRingGeo, outerRingMat);
+    oRing.rotation.x = Math.PI / 4;
+    scene.add(oRing);
+    outerRing.current = oRing;
 
     // --- SECONDARY OBJECTS ---
+    const secondaryMatGold = new THREE.MeshPhysicalMaterial({ color: 0xC9A84C, metalness: 1, roughness: 0, transmission: 0.8 });
+    const secondaryMatRose = new THREE.MeshPhysicalMaterial({ color: 0xC4545A, metalness: 0.9, roughness: 0.2 });
+    const secondaryMatIvory = new THREE.MeshPhysicalMaterial({ color: 0xF5F0E8, metalness: 0.7, roughness: 0.1 });
+
     const createSecondary = (geo: THREE.BufferGeometry, mat: THREE.Material, pos: [number, number, number]) => {
       const mesh = new THREE.Mesh(geo, mat);
       mesh.position.set(...pos);
+      mesh.visible = false;
       scene.add(mesh);
       secondaryObjects.current.push(mesh);
       return mesh;
     };
 
-    const goldMat = new THREE.MeshPhysicalMaterial({ color: 0xC9A84C, metalness: 1, roughness: 0, transmission: 0.8 });
-    const roseMat = new THREE.MeshPhysicalMaterial({ color: 0xC4545A, metalness: 0.9, roughness: 0.2 });
-    const ivoryMat = new THREE.MeshPhysicalMaterial({ color: 0xF5F0E8, metalness: 0.7, roughness: 0.1 });
-
-    createSecondary(new THREE.OctahedronGeometry(0.25), goldMat, [-3, 1.5, -2]);
-    createSecondary(new THREE.CylinderGeometry(0.08, 0.12, 0.4), roseMat, [2.5, -1, -1]);
-    createSecondary(new THREE.TorusGeometry(0.2, 0.04, 16, 40), goldMat, [-2, -2, -3]);
-    createSecondary(new THREE.TetrahedronGeometry(0.18), ivoryMat, [3, 2, -4]);
+    createSecondary(new THREE.OctahedronGeometry(0.25), secondaryMatGold, [-3, 1.5, -2]);
+    createSecondary(new THREE.CylinderGeometry(0.08, 0.12, 0.4), secondaryMatRose, [2.5, -1, -1]);
+    createSecondary(new THREE.TorusGeometry(0.2, 0.04, 16, 40), secondaryMatGold, [-2, -2, -3]);
+    createSecondary(new THREE.TetrahedronGeometry(0.18), secondaryMatIvory, [3, 2, -4]);
     createSecondary(new THREE.IcosahedronGeometry(0.15, 0), new THREE.MeshBasicMaterial({ color: 0xC9A84C, wireframe: true }), [-3.5, -0.5, -2]);
-    createSecondary(new THREE.ConeGeometry(0.06, 0.5, 4), goldMat, [1.5, 2.5, -3]);
+    createSecondary(new THREE.ConeGeometry(0.06, 0.5, 4), secondaryMatGold, [1.5, 2.5, -3]);
 
     // --- MAIN PARTICLES ---
-    const particleCount = window.innerWidth < 768 ? 8000 : 30000;
+    const pCount = 30000;
     const pGeo = new THREE.BufferGeometry();
-    const pPos = new Float32Array(particleCount * 3);
-    const pSpeed = new Float32Array(particleCount);
-    const pOffset = new Float32Array(particleCount);
-    const pSize = new Float32Array(particleCount);
-    const pColor = new Float32Array(particleCount * 3);
+    const pPos = new Float32Array(pCount * 3);
+    const pSpeed = new Float32Array(pCount);
+    const pOffset = new Float32Array(pCount);
+    const pSize = new Float32Array(pCount);
+    const pColor = new Float32Array(pCount * 3);
+    const pVel = new Float32Array(pCount * 3);
 
-    const colorGold = new THREE.Color(0xC9A84C);
-    const colorRose = new THREE.Color(0xC4545A);
+    const gold = new THREE.Color(0xC9A84C);
+    const rose = new THREE.Color(0xC4545A);
 
-    for (let i = 0; i < particleCount; i++) {
+    for (let i = 0; i < pCount; i++) {
       pPos[i * 3] = (Math.random() - 0.5) * 16;
       pPos[i * 3 + 1] = (Math.random() - 0.5) * 10;
       pPos[i * 3 + 2] = (Math.random() - 0.5) * 10 - 3;
@@ -167,22 +172,21 @@ export const DrapeHeroCanvas: React.FC = () => {
       pOffset[i] = Math.random() * Math.PI * 2;
       pSize[i] = Math.random() * 2.5 + 0.5;
 
-      const mix = Math.random() > 0.7 ? colorRose : colorGold;
-      pColor[i * 3] = mix.r;
-      pColor[i * 3 + 1] = mix.g;
-      pColor[i * 3 + 2] = mix.b;
+      const c = Math.random() > 0.7 ? rose : gold;
+      pColor[i * 3] = c.r; pColor[i * 3 + 1] = c.g; pColor[i * 3 + 2] = c.b;
+      pVel[i * 3] = 0; pVel[i * 3 + 1] = 0; pVel[i * 3 + 2] = 0;
     }
 
     pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+    pGeo.setAttribute('color', new THREE.BufferAttribute(pColor, 3));
     pGeo.setAttribute('aSpeed', new THREE.BufferAttribute(pSpeed, 1));
     pGeo.setAttribute('aOffset', new THREE.BufferAttribute(pOffset, 1));
     pGeo.setAttribute('aSize', new THREE.BufferAttribute(pSize, 1));
-    pGeo.setAttribute('color', new THREE.BufferAttribute(pColor, 3));
 
     const pMat = new THREE.ShaderMaterial({
       transparent: true,
       vertexColors: true,
-      uniforms: { uTime: { value: 0 }, uMouse: { value: new THREE.Vector2(0, 0) } },
+      uniforms: { uTime: { value: 0 } },
       vertexShader: `
         uniform float uTime;
         attribute float aSpeed;
@@ -192,8 +196,8 @@ export const DrapeHeroCanvas: React.FC = () => {
         void main() {
           vColor = color;
           vec3 pos = position;
-          pos.x += sin(uTime * aSpeed + aOffset) * 0.1;
-          pos.y += cos(uTime * aSpeed * 0.7 + aOffset) * 0.05;
+          pos.x += sin(uTime * aSpeed + aOffset) * 0.002;
+          pos.y += cos(uTime * aSpeed * 0.7 + aOffset) * 0.001;
           vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
           gl_PointSize = aSize * (300.0 / -mvPosition.z);
           gl_Position = projectionMatrix * mvPosition;
@@ -204,83 +208,208 @@ export const DrapeHeroCanvas: React.FC = () => {
         void main() {
           float dist = length(gl_PointCoord - vec2(0.5));
           if(dist > 0.5) discard;
-          float alpha = 1.0 - (dist * 2.0);
-          alpha = pow(alpha, 2.0) * 0.6;
+          float alpha = (1.0 - (dist * 2.0)) * 0.6;
           gl_FragColor = vec4(vColor, alpha);
         }
       `
     });
 
-    const particles = new THREE.Points(pGeo, pMat);
-    scene.add(particles);
-    particlesRef.current = particles;
+    const pPoints = new THREE.Points(pGeo, pMat);
+    pPoints.visible = false;
+    scene.add(pPoints);
+    particles.current = pPoints;
+    particleVelocities.current = pVel;
 
-    // --- RIBBON TRAIL ---
-    const ribbonCount = 200;
-    const rGeo = new THREE.BufferGeometry();
-    const rPos = new Float32Array(ribbonCount * 3);
+    // --- GOLD STREAM ---
+    const sCount = 200;
     const curve = new THREE.CatmullRomCurve3([
       new THREE.Vector3(-6, -4, -2),
       new THREE.Vector3(-2, 0, 1),
       new THREE.Vector3(2, -1, 0),
       new THREE.Vector3(6, 4, -2),
     ]);
-    const ribbonPoints = curve.getPoints(ribbonCount - 1);
-    ribbonPoints.forEach((p, i) => {
-      rPos[i * 3] = p.x; rPos[i * 3 + 1] = p.y; rPos[i * 3 + 2] = p.z;
-    });
-    rGeo.setAttribute('position', new THREE.BufferAttribute(rPos, 3));
-    const ribbon = new THREE.Points(rGeo, new THREE.PointsMaterial({ color: 0xC9A84C, size: 0.05, transparent: true, opacity: 0.8 }));
-    scene.add(ribbon);
-    ribbonRef.current = ribbon;
-
-    // --- STARS ---
-    const starCount = 5000;
     const sGeo = new THREE.BufferGeometry();
-    const sPos = new Float32Array(starCount * 3);
-    for (let i = 0; i < starCount; i++) {
-      sPos[i * 3] = (Math.random() - 0.5) * 40;
-      sPos[i * 3 + 1] = (Math.random() - 0.5) * 40;
-      sPos[i * 3 + 2] = -20 + Math.random() * 15;
-    }
+    const sPos = new Float32Array(sCount * 3);
     sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
-    const stars = new THREE.Points(sGeo, new THREE.PointsMaterial({ color: 0xFFFFFF, size: 0.02, transparent: true, opacity: 0.5 }));
-    scene.add(stars);
+    const sPoints = new THREE.Points(sGeo, new THREE.PointsMaterial({ color: 0xC9A84C, size: 0.05, transparent: true, opacity: 0.8 }));
+    scene.add(sPoints);
+    streamParticles.current = sPoints;
 
-    // --- VOLUMETRIC LIGHT COLUMNS ---
-    if (window.innerWidth >= 768) {
-      const createColumn = (color: number, x: number) => {
-        const colGeo = new THREE.CylinderGeometry(0, 0.3, 12, 16);
-        const colMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.04, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
-        const col = new THREE.Mesh(colGeo, colMat);
-        col.position.set(x, 0, -5);
-        scene.add(col);
-        return col;
-      };
-      createColumn(0xC9A84C, 0);
-      createColumn(0xC4545A, -4);
-      createColumn(0xC9A84C, 4);
+    // --- LIGHT COLUMNS ---
+    const createColumn = (color: number, x: number) => {
+      const colGeo = new THREE.CylinderGeometry(0, 0.3, 12, 16);
+      const colMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, blending: THREE.AdditiveBlending });
+      const col = new THREE.Mesh(colGeo, colMat);
+      col.position.set(x, 0, -5);
+      scene.add(col);
+      lightColumns.current.push(col);
+    };
+    createColumn(0xC9A84C, 0);
+    createColumn(0xC4545A, -4);
+    createColumn(0xC9A84C, 4);
+
+    // --- STAR FIELD ---
+    const starCount = 5000;
+    const starGeo = new THREE.BufferGeometry();
+    const starPos = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+      starPos[i * 3] = (Math.random() - 0.5) * 40;
+      starPos[i * 3 + 1] = (Math.random() - 0.5) * 40;
+      starPos[i * 3 + 2] = -20 + Math.random() * 15;
     }
+    starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+    const sField = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xFFFFFF, size: 0.02, transparent: true, opacity: 0 }));
+    scene.add(sField);
+    starField.current = sField;
 
     // --- EVENTS ---
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.targetX = (e.clientX / width) * 2 - 1;
       mouseRef.current.targetY = -(e.clientY / height) * 2 + 1;
-      mouseRef.current.vx = e.clientX - mouseRef.current.lastX;
-      mouseRef.current.vy = e.clientY - mouseRef.current.lastY;
+      mouseRef.current.vX = (e.clientX - mouseRef.current.lastX) * 0.01;
       mouseRef.current.lastX = e.clientX;
-      mouseRef.current.lastY = e.clientY;
     };
 
     const handleClick = () => {
-      if (bloomPass) {
-        bloomPass.strength = 4.0;
-        setTimeout(() => bloomPass.strength = 2.0, 300);
+      if (!gemGroup.current) return;
+      // Burst
+      const pos = particles.current!.geometry.attributes.position.array as Float32Array;
+      const vels = particleVelocities.current!;
+      for (let i = 0; i < pCount; i++) {
+        const dx = pos[i * 3];
+        const dy = pos[i * 3 + 1];
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        vels[i * 3] += (dx / dist) * 0.1;
+        vels[i * 3 + 1] += (dy / dist) * 0.1;
       }
-      if (gemRef.current) {
-        gemRef.current.scale.set(1.3, 1.3, 1.3);
-      }
+      // Bloom spike
+      bloomPass.strength = 4.0;
+      setTimeout(() => bloomPass.strength = 2.0, 300);
+      // Gem pulse
+      gemGroup.current.scale.setScalar(1.3);
     };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('click', handleClick);
+
+    // --- ANIMATION LOOP ---
+    const animate = () => {
+      animIdRef.current = requestAnimationFrame(animate);
+      const t = clockRef.current.getElapsedTime();
+
+      // Lerp mouse
+      mouseRef.current.targetX += (mouseRef.current.targetX - mouseRef.current.targetX) * 0.05;
+      mouseRef.current.targetY += (mouseRef.current.targetY - mouseRef.current.targetY) * 0.05;
+
+      // Camera
+      camera.position.z = 8 + Math.sin(t * 0.4) * 0.3;
+      camera.rotation.y += (mouseRef.current.targetX * 0.12 - camera.rotation.y) * 0.04;
+      camera.rotation.x += (mouseRef.current.targetY * -0.08 - camera.rotation.x) * 0.04;
+
+      // Gem
+      if (gemGroup.current) {
+        gemGroup.current.rotation.y += 0.003 + Math.abs(mouseRef.current.vX) * 0.1;
+        gemGroup.current.rotation.x += 0.001;
+        gemGroup.current.position.y = Math.sin(t * 0.8) * 0.15;
+        gemGroup.current.scale.lerp(new THREE.Vector3(1, 1, 1), 0.1);
+        if (t < 4) { // Intro
+          const s = Math.min(1, Math.max(0, (t - 0.5) / 1));
+          gemGroup.current.scale.setScalar(s);
+          if (keyLight.current) keyLight.current.intensity = s * 3;
+        }
+      }
+
+      // Rings Intro & Loop
+      if (innerRing.current) {
+        if (t > 1.5 && t < 2) {
+          const s = (t - 1.5) / 0.5;
+          (innerRing.current.material as THREE.MeshBasicMaterial).opacity = s * 0.7;
+          innerRing.current.scale.setScalar(s);
+        }
+        innerRing.current.rotation.x += 0.008 + mouseRef.current.vX * 0.1;
+      }
+      if (outerRing.current) {
+        if (t > 2 && t < 2.5) {
+          const s = (t - 2) / 0.5;
+          (outerRing.current.material as THREE.MeshBasicMaterial).opacity = s * 0.5;
+          outerRing.current.scale.setScalar(s);
+        }
+        outerRing.current.rotation.z += 0.005;
+      }
+
+      // Orbit Light
+      if (keyLight.current) {
+        keyLight.current.position.x = Math.sin(t * 0.5) * 3;
+        keyLight.current.position.z = Math.cos(t * 0.5) * 3;
+      }
+
+      // Particles
+      if (particles.current) {
+        if (t > 2.5 && t < 3) {
+          particles.current.visible = true;
+          particles.current.renderOrder = 1;
+        }
+        const posArr = particles.current.geometry.attributes.position.array as Float32Array;
+        const vels = particleVelocities.current!;
+        for (let i = 0; i < pCount; i++) {
+          // Sea effect
+          const dx = posArr[i * 3] - mouseRef.current.targetX * 5;
+          const dy = posArr[i * 3 + 1] - mouseRef.current.targetY * 5;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 1.5) {
+            vels[i * 3] += dx * 0.002;
+            vels[i * 3 + 1] += dy * 0.002;
+          }
+          // Apply velocity
+          posArr[i * 3] += vels[i * 3];
+          posArr[i * 3 + 1] += vels[i * 3 + 1];
+          // Friction
+          vels[i * 3] *= 0.95;
+          vels[i * 3 + 1] *= 0.95;
+        }
+        particles.current.geometry.attributes.position.needsUpdate = true;
+        (particles.current.material as THREE.ShaderMaterial).uniforms.uTime.value = t;
+      }
+
+      // Stream
+      if (streamParticles.current) {
+        const streamPos = streamParticles.current.geometry.attributes.position.array as Float32Array;
+        for (let i = 0; i < sCount; i++) {
+          const pT = ((i / sCount) + t * 0.1) % 1;
+          const point = curve.getPoint(pT);
+          streamPos[i * 3] = point.x + Math.sin(t + i) * 0.05;
+          streamPos[i * 3 + 1] = point.y + Math.cos(t + i) * 0.05;
+          streamPos[i * 3 + 2] = point.z;
+        }
+        streamParticles.current.geometry.attributes.position.needsUpdate = true;
+      }
+
+      // Secondary Objects
+      secondaryObjects.current.forEach((obj, i) => {
+        if (t > 3 && !obj.visible) obj.visible = true;
+        const freq = 0.3 + (i * 0.1);
+        const amp = 0.004 + (i * 0.001);
+        obj.position.y += Math.sin(t * freq + i) * amp;
+        obj.rotation.y += 0.01;
+      });
+
+      // Columns
+      lightColumns.current.forEach((col, i) => {
+        if (t > 3 && t < 3.5) (col.material as THREE.MeshBasicMaterial).opacity = (t - 3) * 0.08;
+        col.rotation.y += 0.001;
+      });
+
+      // Stars
+      if (starField.current) {
+        if (t > 3.5 && t < 4) (starField.current.material as THREE.PointsMaterial).opacity = (t - 3.5) * 2;
+        starField.current.rotation.y += 0.0001;
+        starField.current.position.x = mouseRef.current.targetX * 0.05;
+      }
+
+      composer.render();
+    };
+
+    animate();
 
     const handleResize = () => {
       const w = window.innerWidth;
@@ -290,89 +419,15 @@ export const DrapeHeroCanvas: React.FC = () => {
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
     };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('click', handleClick);
     window.addEventListener('resize', handleResize);
 
-    // --- ANIMATION LOOP ---
-    const animate = () => {
-      requestRef.current = requestAnimationFrame(animate);
-      const t = clockRef.current.getElapsedTime();
-
-      // Lerp mouse
-      mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.05;
-      mouseRef.current.y += (mouseRef.current.targetY - mouseRef.current.y) * 0.05;
-
-      // Camera drift & Breathe
-      camera.position.z = 8 + Math.sin(t * 0.4) * 0.3;
-      camera.rotation.y = mouseRef.current.x * 0.12;
-      camera.rotation.x = mouseRef.current.y * -0.08;
-
-      // Gem
-      if (gemRef.current) {
-        gemRef.current.rotation.y += 0.003 + Math.abs(mouseRef.current.vx) * 0.0005;
-        gemRef.current.rotation.x += 0.001;
-        gemRef.current.position.y = Math.sin(t * 0.8) * 0.15;
-        gemRef.current.scale.x += (1.0 - gemRef.current.scale.x) * 0.1;
-        gemRef.current.scale.y += (1.0 - gemRef.current.scale.y) * 0.1;
-        gemRef.current.scale.z += (1.0 - gemRef.current.scale.z) * 0.1;
-      }
-
-      // Orbit Lights
-      pointLight1.position.x = Math.sin(t * 0.5) * 3;
-      pointLight1.position.z = Math.cos(t * 0.5) * 3;
-
-      // Rings
-      if (innerRingRef.current) {
-        innerRingRef.current.rotation.x += 0.008;
-        innerRingRef.current.rotation.y += mouseRef.current.y * 0.01;
-      }
-      if (outerRingRef.current) {
-        outerRingRef.current.rotation.z += 0.005;
-        outerRingRef.current.rotation.x += mouseRef.current.x * 0.01;
-      }
-
-      // Secondary Objects
-      secondaryObjects.current.forEach((obj, i) => {
-        obj.rotation.y += 0.005 + (i * 0.001);
-        obj.rotation.z += 0.002;
-        obj.position.y += Math.sin(t * (0.3 + i * 0.1) + i) * 0.005;
-      });
-
-      // Particles
-      if (particlesRef.current) {
-        const mat = particlesRef.current.material as THREE.ShaderMaterial;
-        mat.uniforms.uTime.value = t;
-        mat.uniforms.uMouse.value.set(mouseRef.current.x, mouseRef.current.y);
-      }
-
-      // Stars slow drift
-      stars.rotation.y += 0.0001;
-
-      // Ribbon motion
-      if (ribbonRef.current) {
-        const pos = ribbonRef.current.geometry.attributes.position as THREE.BufferAttribute;
-        for (let i = 0; i < ribbonCount; i++) {
-          const pt = curve.getPoint(( (i + t * 5) % ribbonCount ) / ribbonCount);
-          pos.setXYZ(i, pt.x + Math.sin(t + i) * 0.02, pt.y + Math.cos(t + i) * 0.02, pt.z);
-        }
-        pos.needsUpdate = true;
-      }
-
-      composer.render();
-    };
-
-    animate();
-
     return () => {
-      cancelAnimationFrame(requestRef.current);
+      cancelAnimationFrame(animIdRef.current);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('click', handleClick);
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
       pmremGenerator.dispose();
-      // Dispose geometries & materials
       scene.traverse((obj) => {
         if (obj instanceof THREE.Mesh || obj instanceof THREE.Points) {
           obj.geometry.dispose();
