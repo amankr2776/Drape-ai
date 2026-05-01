@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef, createElement } from 'react';
@@ -7,6 +6,7 @@ import { User, ScanLine, Bot, Palette, ShoppingCart, CheckCircle } from 'lucide-
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import * as THREE from 'three';
+import { trackEvent } from '@/lib/analytics';
 
 const analysisSteps = [
   { text: 'Scanning your photo...', icon: ScanLine },
@@ -26,6 +26,10 @@ export default function AnalyzePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    trackEvent('analysis_started');
+  }, []);
+
+  useEffect(() => {
     if (currentStep < analysisSteps.length - 1) {
       const timer = setTimeout(() => {
         setCurrentStep(prev => prev + 1);
@@ -33,6 +37,7 @@ export default function AnalyzePage() {
       return () => clearTimeout(timer);
     } else {
       const finalTimer = setTimeout(() => {
+        trackEvent('analysis_completed', { body_shape: 'Pear', skin_tone: 'Warm' });
         router.push('/results');
       }, STEP_DURATION);
       return () => clearTimeout(finalTimer);

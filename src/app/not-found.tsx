@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Search } from 'lucide-react';
 
 export default function NotFound() {
   return (
@@ -44,15 +44,23 @@ export default function NotFound() {
           Lost in the Wardrobe
         </h1>
         <p className="text-lg text-foreground/60 font-body max-w-md mx-auto mb-10 leading-relaxed">
-          It seems the aesthetic you seek has been misplaced amongst the silks and satins. Let's return to the collection.
+          Oops! It seems the aesthetic you seek has been misplaced amongst the silks and satins. Let's return to the collection.
         </p>
 
-        <Button asChild size="lg" className="h-16 px-12 font-headline text-xl tracking-[0.2em] group relative overflow-hidden bg-primary text-primary-foreground hover:glow-gold">
-          <Link href="/" className="flex items-center gap-3">
-            <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-2" />
-            Take Me Home
-          </Link>
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button asChild size="lg" className="h-16 px-12 font-headline text-xl tracking-[0.2em] group relative overflow-hidden bg-primary text-primary-foreground hover:glow-gold">
+            <Link href="/" className="flex items-center gap-3">
+              <ArrowLeft className="w-5 h-5 transition-transform group-hover:-translate-x-2" />
+              Go Home
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg" className="h-16 px-12 font-headline text-xl tracking-[0.2em] border-primary/20 hover:bg-primary/5">
+            <Link href="/results" className="flex items-center gap-3">
+              <Search className="w-5 h-5" />
+              Browse Outfits
+            </Link>
+          </Button>
+        </div>
       </motion.div>
     </div>
   );
