@@ -1,4 +1,3 @@
-
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -8,6 +7,7 @@ import Header from '@/components/header';
 import Footer from '@/components/landing/footer';
 import ScrollToTop from '@/components/scroll-to-top';
 import { AppLoader } from '@/components/app-loader';
+import { CookieBanner } from '@/components/legal/cookie-banner';
 
 export const metadata: Metadata = {
   title: 'DRAPE AI — Your Personal AI Fashion Stylist India',
@@ -66,6 +66,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <CookieBanner />
         <Toaster />
         <ScrollToTop />
       </body>
