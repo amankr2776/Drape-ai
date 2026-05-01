@@ -1,6 +1,8 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useToast } from './use-toast';
 
 export type Product = {
   id: string;
@@ -21,6 +23,7 @@ export function useStore() {
   const [wishlist, setWishlist] = useState<Product[]>([]);
   const [cart, setCart] = useState<Product[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const savedWishlist = localStorage.getItem('drape_wishlist');
@@ -40,8 +43,20 @@ export function useStore() {
     let newWishlist;
     if (exists) {
       newWishlist = wishlist.filter(p => p.id !== product.id);
+      toast({
+        title: "Removed from Wishlist",
+        description: `${product.name} has been removed from your atelier collection.`,
+      });
     } else {
       newWishlist = [...wishlist, product];
+      toast({
+        title: "Added to Wishlist",
+        description: `${product.name} is now saved in your atelier.`,
+      });
+      // Haptic feedback
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate([10, 30, 10]);
+      }
     }
     setWishlist(newWishlist);
     save(newWishlist, cart);
@@ -52,6 +67,16 @@ export function useStore() {
       const newCart = [...cart, product];
       setCart(newCart);
       save(wishlist, newCart);
+      toast({
+        title: "Added to Plan",
+        description: `${product.name} added to your shopping plan.`,
+      });
+    } else {
+      removeFromCart(product.id);
+      toast({
+        title: "Removed from Plan",
+        description: `${product.name} removed from your shopping plan.`,
+      });
     }
   };
 
@@ -64,6 +89,10 @@ export function useStore() {
   const clearCart = () => {
     setCart([]);
     save(wishlist, []);
+    toast({
+      title: "Plan Cleared",
+      description: "All items have been removed from your shopping plan.",
+    });
   };
 
   return {
