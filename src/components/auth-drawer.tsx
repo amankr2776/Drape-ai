@@ -36,6 +36,9 @@ export function AuthDrawer({ children }: { children: React.ReactNode }) {
         {children}
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-md bg-background border-l border-primary/20 p-8">
+        <SheetHeader className="sr-only">
+          <SheetTitle>Style Profile Authentication</SheetTitle>
+        </SheetHeader>
         <AnimatePresence mode="wait">
           {isSuccess ? (
             <motion.div 

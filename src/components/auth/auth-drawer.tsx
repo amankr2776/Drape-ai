@@ -172,6 +172,9 @@ export function AuthDrawer({ children }: { children: React.ReactNode }) {
         {children}
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-[420px] bg-background border-l border-primary/20 p-0 overflow-hidden flex flex-col">
+        <SheetHeader className="sr-only">
+          <SheetTitle>Authentication</SheetTitle>
+        </SheetHeader>
         <div className="absolute top-0 left-0 w-1 h-full bg-primary z-50" />
         
         <div className="p-8 flex-grow overflow-y-auto">
