@@ -11,6 +11,12 @@ import { CookieBanner } from '@/components/legal/cookie-banner';
 import { PushPermissionModal } from '@/components/notifications/push-permission-modal';
 import { ChatWidget } from '@/components/chat-widget';
 import { FirebaseClientProvider } from '@/firebase';
+import { checkEnvVariables } from '@/utils/env-check';
+
+// FIX 4 - Run environment check on startup
+if (typeof window !== 'undefined') {
+  checkEnvVariables();
+}
 
 export const metadata: Metadata = {
   title: {
