@@ -1,414 +1,372 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass.js';
-import { AfterimagePass } from 'three/examples/jsm/postprocessing/AfterimagePass.js';
-import { GlitchPass } from 'three/examples/jsm/postprocessing/GlitchPass.js';
 
-/**
- * @fileOverview ULTRA CINEMATIC HERO CANVAS
- * Features: Morphing Cloth, 50k Sentient Particles, DNA Strands, 
- * Magnetic Cursor, Click Ripples, and multi-pass Post-Processing.
- */
+// --- VISUAL LAWS & CONSTANTS ---
+const MORPH_SEQUENCE = [0, 1, 2, 3, 4, 5]; // silk, pleats, spiral, inflate, origami, shatter
+const MORPH_DURATION = 3000;
+const COLOR_ERA_DURATION = 15000;
+const DAMPING = 0.92;
+const MOUSE_GRAVITY = 120;
+const RIPPLE_SPEED = 0.005;
 
-// --- SHADERS ---
+const PALETTES = [
+  { name: 'Gold', primary: [42, 61, 54], accent: [38, 43, 93], glow: '#C9A84C' },
+  { name: 'Rose', primary: [357, 58, 55], accent: [38, 43, 93], glow: '#C4545A' },
+  { name: 'Silver', primary: [0, 0, 93], accent: [240, 17, 15], glow: '#F5F0E8' },
+  { name: 'Teal', primary: [180, 70, 50], accent: [200, 80, 40], glow: '#4FC3F7' },
+];
 
-const fabricVertexShader = `
-  varying vec2 vUv;
-  varying vec3 vNormal;
-  varying vec3 vViewPosition;
-  uniform float uTime;
-  uniform vec2 uMouse;
-  uniform float uMorphProgress;
-  uniform float uMorphTarget; // 0: ripple, 1: pleats, 2: spiral, 3: inflate, 4: explode
-  uniform float uScroll;
-  uniform float uRippleTime;
-  uniform vec2 uRippleOrigin;
+interface Point {
+  x: number; y: number;
+  px: number; py: number; // previous pos for Verlet
+  rx: number; ry: number; // rest pos
+  vx: number; vy: number;
+}
 
-  void main() {
-    vUv = uv;
-    vec3 pos = position;
-    
-    // Base wave
-    float wave = sin(pos.x * 2.0 + uTime) * cos(pos.y * 1.5 + uTime * 0.8) * 0.2;
-    
-    // Mouse Warp
-    float dist = distance(pos.xy, uMouse * 3.5);
-    float mouseInfluence = smoothstep(2.5, 0.0, dist);
-    pos.z += sin(dist * 5.0 - uTime * 4.0) * 0.3 * mouseInfluence;
-    pos.z += mouseInfluence * 0.5;
-
-    // Click Ripple
-    float rDist = distance(pos.xy, uRippleOrigin * 4.0);
-    float rAge = uTime - uRippleTime;
-    if(rAge > 0.0 && rAge < 2.0) {
-      float ripple = sin(rDist * 10.0 - rAge * 15.0) * 0.5 * (1.0 - rAge / 2.0) * smoothstep(1.5, 0.0, rDist - rAge * 5.0);
-      pos.z += ripple;
-    }
-
-    // Morph Logic
-    float pleats = sin(pos.x * 12.0) * 0.3;
-    float spiral = atan(pos.y, pos.x) * 0.2; 
-    float inflate = length(pos.xy) < 2.5 ? (1.5 - length(pos.xy) * 0.5) : 0.0;
-    
-    float targetY = 0.0;
-    if(uMorphTarget < 1.0) targetY = mix(0.0, pleats, uMorphProgress);
-    else if (uMorphTarget < 2.0) targetY = mix(pleats, spiral, uMorphProgress);
-    else if (uMorphTarget < 3.0) targetY = mix(spiral, inflate, uMorphProgress);
-    else if (uMorphTarget < 4.0) targetY = mix(inflate, wave, uMorphProgress);
-    else targetY = mix(wave, 0.0, uMorphProgress);
-
-    pos.z += targetY;
-
-    // Scroll dissolution
-    pos.z -= uScroll * 8.0;
-    pos.xy *= (1.0 - uScroll * 0.4);
-
-    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    vViewPosition = -mvPosition.xyz;
-    vNormal = normalize(normalMatrix * normal);
-    gl_Position = projectionMatrix * mvPosition;
-  }
-`;
-
-const fabricFragmentShader = `
-  varying vec2 vUv;
-  varying vec3 vNormal;
-  varying vec3 vViewPosition;
-  uniform float uTime;
-  uniform vec3 uColorA;
-  uniform vec3 uColorB;
-  uniform float uColorPhase;
-
-  void main() {
-    vec3 normal = normalize(vNormal);
-    vec3 viewDir = normalize(vViewPosition);
-    
-    // Fresnel
-    float fresnel = pow(1.0 - dot(viewDir, normal), 3.0);
-    
-    // Iridescence
-    float angle = dot(viewDir, normal);
-    vec3 baseColor = mix(uColorA, uColorB, uColorPhase);
-    vec3 irid = mix(baseColor, vec3(1.0, 0.9, 0.8), abs(sin(angle * 4.0 + uTime * 0.5)));
-    
-    // Procedural weave
-    float weave = step(0.5, fract(vUv.x * 150.0)) * step(0.5, fract(vUv.y * 150.0));
-    vec3 finalColor = mix(irid, vec3(1.0), fresnel * 0.6);
-    finalColor += weave * 0.03;
-
-    gl_FragColor = vec4(finalColor, 0.85);
-  }
-`;
-
-const particleVertexShader = `
-  uniform float uTime;
-  uniform vec2 uMouse;
-  uniform float uPhase; // 0: Form, 1: Explode, 2: Drift, 3: Implode
-  uniform float uScroll;
-  attribute float aSize;
-  attribute vec3 aTarget;
-  attribute float aPhaseOffset;
-  varying vec3 vColor;
-  varying float vOpacity;
-
-  void main() {
-    vec3 pos = position;
-    
-    // Interaction - Parts the sea
-    float dist = distance(pos.xy, uMouse * 5.0);
-    if(dist < 2.0) {
-      pos += normalize(pos - vec3(uMouse * 5.0, 0.0)) * (2.0 - dist) * 0.8;
-    }
-
-    // Phase Logic
-    float t = mod(uTime * 0.15 + aPhaseOffset, 1.0);
-    vec3 targetPos = mix(pos, aTarget, smoothstep(0.0, 0.3, t));
-    targetPos = mix(targetPos, pos + normalize(pos) * 5.0, smoothstep(0.3, 0.6, t));
-    targetPos = mix(targetPos, pos, smoothstep(0.6, 1.0, t));
-
-    pos = targetPos;
-
-    // Scroll
-    pos.y += uScroll * 15.0;
-
-    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    gl_PointSize = aSize * (400.0 / -mvPosition.z);
-    gl_Position = projectionMatrix * mvPosition;
-    
-    vColor = vec3(1.0, 0.84, 0.4); // Gold
-    vOpacity = smoothstep(0.0, 0.1, t) * (1.0 - smoothstep(0.9, 1.0, t));
-  }
-`;
-
-const particleFragmentShader = `
-  varying vec3 vColor;
-  varying float vOpacity;
-  void main() {
-    float d = distance(gl_PointCoord, vec2(0.5));
-    if(d > 0.5) discard;
-    gl_FragColor = vec4(vColor, vOpacity * (1.0 - d * 2.0));
-  }
-`;
+interface Particle {
+  x: number; y: number;
+  vx: number; vy: number;
+  size: number;
+  color: string;
+  life: number;
+  maxLife: number;
+  state: 'orbit' | 'cloth' | 'drift' | 'explosion';
+  targetIndex?: number;
+}
 
 export const UltraHeroCanvas: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const requestRef = useRef<number>(0);
-  const mouse = useRef({ x: 0, y: 0, v: 0 });
-  const scroll = useRef(0);
-  const ripple = useRef({ time: 0, x: 0, y: 0 });
-  const [introFinished, setIntroFinished] = useState(false);
+  
+  // Refs for simulation state
+  const state = useRef({
+    time: 0,
+    lastTime: 0,
+    introProgress: 0,
+    scrollProgress: 0,
+    morphProgress: 0,
+    currentMorph: 0,
+    nextMorph: 1,
+    colorEra: 0,
+    mouse: { x: -1000, y: -1000, px: 0, py: 0, vx: 0, vy: 0, down: false },
+    ripples: [] as { x: number; y: number; t: number }[],
+    points: [] as Point[],
+    particles: [] as Particle[],
+    offscreen: {
+      stars: null as HTMLCanvasElement | null,
+      rays: null as HTMLCanvasElement | null,
+    },
+    fps: 60,
+  });
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) return;
 
+    let animId: number;
     const width = window.innerWidth;
     const height = window.innerHeight;
+    const dpr = window.devicePixelRatio || 1;
     const isMobile = width < 768;
 
-    // --- SETUP ---
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
-    camera.position.z = 5;
+    const gridCols = isMobile ? 40 : 80;
+    const gridRows = isMobile ? 60 : 120;
 
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: !isMobile });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    containerRef.current.appendChild(renderer.domElement);
+    // --- INITIALIZATION ---
+    const init = () => {
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
 
-    // --- POST PROCESSING ---
-    const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
+      // Initialize points (Grid)
+      const points: Point[] = [];
+      const cellW = (width * 0.6) / gridCols;
+      const cellH = (height * 0.8) / gridRows;
+      const offsetX = width * 0.2;
+      const offsetY = height * 0.1;
 
-    const bloomPass = new UnrealBloomPass(new THREE.Vector2(width, height), isMobile ? 0.7 : 1.5, 0.6, 0.1);
-    composer.addPass(bloomPass);
-
-    if (!isMobile) {
-      composer.addPass(new FilmPass(0.15, 0.05, 648, false));
-      composer.addPass(new AfterimagePass(0.96));
-      const glitch = new GlitchPass();
-      glitch.enabled = false;
-      composer.addPass(glitch);
-      
-      // Random glitch trigger
-      const glitchInterval = setInterval(() => {
-        glitch.enabled = true;
-        setTimeout(() => { glitch.enabled = false; }, 300);
-      }, 10000);
-      
-      // Cleanup for interval
-      (window as any)._glitchInterval = glitchInterval;
-    }
-
-    // --- GEOMETRIES ---
-
-    // 1. Hero Cloth
-    const fabricGeo = new THREE.PlaneGeometry(5, 7, isMobile ? 60 : 200, isMobile ? 60 : 200);
-    const fabricMat = new THREE.ShaderMaterial({
-      vertexShader: fabricVertexShader,
-      fragmentShader: fabricFragmentShader,
-      uniforms: {
-        uTime: { value: 0 },
-        uMouse: { value: new THREE.Vector2(0, 0) },
-        uMorphProgress: { value: 0 },
-        uMorphTarget: { value: 0 },
-        uScroll: { value: 0 },
-        uRippleTime: { value: 0 },
-        uRippleOrigin: { value: new THREE.Vector2(0, 0) },
-        uColorA: { value: new THREE.Color('#C4545A') },
-        uColorB: { value: new THREE.Color('#C9A84C') },
-        uColorPhase: { value: 0 },
-      },
-      transparent: true,
-      side: THREE.DoubleSide,
-    });
-    const cloth = new THREE.Mesh(fabricGeo, fabricMat);
-    cloth.position.set(0, 0, -1);
-    scene.add(cloth);
-
-    // 2. DNA Strands
-    const helixGroup = new THREE.Group();
-    const createStrand = (color: string, offset: number) => {
-      const points = [];
-      for (let i = 0; i <= 100; i++) {
-        const t = i / 100;
-        points.push(new THREE.Vector3(Math.sin(t * Math.PI * 8 + offset) * 0.5, (t - 0.5) * 15, Math.cos(t * Math.PI * 8 + offset) * 0.5));
+      for (let j = 0; j <= gridRows; j++) {
+        for (let i = 0; i <= gridCols; i++) {
+          const x = offsetX + i * cellW;
+          const y = offsetY + j * cellH;
+          points.push({ x, y, px: x, py: y, rx: x, ry: y, vx: 0, vy: 0 });
+        }
       }
-      const curve = new THREE.CatmullRomCurve3(points);
-      const geo = new THREE.TubeGeometry(curve, 100, 0.015, 8, false);
-      const mat = new THREE.MeshPhysicalMaterial({ color, metalness: 0.8, roughness: 0.2 });
-      return new THREE.Mesh(geo, mat);
+      state.current.points = points;
+
+      // Initialize particles
+      const particles: Particle[] = [];
+      const pCount = isMobile ? 800 : 3000;
+      for (let i = 0; i < pCount; i++) {
+        particles.push(createParticle(i < pCount * 0.2 ? 'orbit' : 'drift', width, height));
+      }
+      state.current.particles = particles;
+
+      // Pre-render Stars
+      state.current.offscreen.stars = createStarField(width, height);
     };
-    const strand1 = createStrand('#C9A84C', 0);
-    const strand2 = createStrand('#C4545A', Math.PI);
-    helixGroup.add(strand1, strand2);
-    helixGroup.position.set(-6, 0, -2);
-    const helix2 = helixGroup.clone();
-    helix2.position.x = 6;
-    scene.add(helixGroup, helix2);
 
-    // 3. Sentient Particles
-    const pCount = isMobile ? 8000 : 50000;
-    const pGeo = new THREE.BufferGeometry();
-    const pPos = new Float32Array(pCount * 3);
-    const pTargets = new Float32Array(pCount * 3);
-    const pSizes = new Float32Array(pCount);
-    const pPhaseOffsets = new Float32Array(pCount);
-
-    for (let i = 0; i < pCount; i++) {
-      pPos[i * 3] = (Math.random() - 0.5) * 12;
-      pPos[i * 3 + 1] = (Math.random() - 0.5) * 12;
-      pPos[i * 3 + 2] = (Math.random() - 0.5) * 6;
-      
-      // Target Silhouette (Dress shape formula)
-      const t = i / pCount;
-      const angle = t * Math.PI * 2;
-      const r = 1.0 + Math.sin(angle * 3.0) * 0.2;
-      pTargets[i * 3] = Math.cos(angle) * r;
-      pTargets[i * 3 + 1] = t * 4.0 - 2.0;
-      pTargets[i * 3 + 2] = Math.sin(angle) * r * 0.5;
-
-      pSizes[i] = Math.random() * 0.06 + 0.01;
-      pPhaseOffsets[i] = Math.random();
-    }
-
-    pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-    pGeo.setAttribute('aTarget', new THREE.BufferAttribute(pTargets, 3));
-    pGeo.setAttribute('aSize', new THREE.BufferAttribute(pSizes, 1));
-    pGeo.setAttribute('aPhaseOffset', new THREE.BufferAttribute(pPhaseOffsets, 1));
-
-    const pMat = new THREE.ShaderMaterial({
-      vertexShader: particleVertexShader,
-      fragmentShader: particleFragmentShader,
-      uniforms: {
-        uTime: { value: 0 },
-        uMouse: { value: new THREE.Vector2(0, 0) },
-        uScroll: { value: 0 },
-      },
-      transparent: true,
-      blending: THREE.AdditiveBlending,
+    const createParticle = (type: any, w: number, h: number): Particle => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 2,
+      vy: (Math.random() - 0.5) * 2,
+      size: Math.random() * 1.5 + 0.5,
+      color: PALETTES[0].glow,
+      life: 0,
+      maxLife: 100 + Math.random() * 200,
+      state: type,
     });
-    const particles = new THREE.Points(pGeo, pMat);
-    scene.add(particles);
 
-    // --- INTERACTION ---
+    const createStarField = (w: number, h: number) => {
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      const x = c.getContext('2d')!;
+      const img = x.createImageData(w, h);
+      const sCount = isMobile ? 2000 : 8000;
+      for (let i = 0; i < sCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const radius = Math.pow(Math.random(), 0.5) * Math.max(w, h) * 0.8;
+        const px = Math.floor(w / 2 + Math.cos(angle) * radius);
+        const py = Math.floor(h / 2 + Math.sin(angle) * radius);
+        if (px >= 0 && px < w && py >= 0 && py < h) {
+          const idx = (py * w + px) * 4;
+          const bright = Math.random() * 255;
+          img.data[idx] = 200; img.data[idx+1] = 180; img.data[idx+2] = 150; img.data[idx+3] = bright;
+        }
+      }
+      x.putImageData(img, 0, 0);
+      return c;
+    };
+
+    // --- PHYSICS & LOGIC ---
+    const update = (t: number) => {
+      const dt = t - state.current.lastTime;
+      state.current.lastTime = t;
+      state.current.time = t;
+
+      // Era Logic
+      state.current.colorEra = Math.floor((t / COLOR_ERA_DURATION) % 4);
+      
+      // Morph Logic
+      const morphT = (t % MORPH_DURATION) / MORPH_DURATION;
+      state.current.morphProgress = morphT;
+      state.current.currentMorph = Math.floor((t / MORPH_DURATION) % 6);
+      state.current.nextMorph = (state.current.currentMorph + 1) % 6;
+
+      // Physics update
+      const { points, particles, mouse, ripples, scrollProgress } = state.current;
+      const palette = PALETTES[state.current.colorEra];
+
+      // Update Points (Cloth)
+      points.forEach((p, idx) => {
+        const i = idx % (gridCols + 1);
+        const j = Math.floor(idx / (gridCols + 1));
+        const ni = i / gridCols;
+        const nj = j / gridRows;
+
+        // Apply Forces (Waves)
+        const wave = Math.sin(ni * 4 + t * 0.001) * Math.cos(nj * 3 + t * 0.0007) * 40;
+        let tx = p.rx, ty = p.ry + wave;
+
+        // Morph Targets
+        if (state.current.currentMorph === 1) { // Pleats
+          tx += Math.sin(nj * 12 + t * 0.001) * 30;
+        } else if (state.current.currentMorph === 2) { // Spiral
+          const dx = p.rx - width / 2, dy = p.ry - height / 2;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const angle = dist * 0.01 * Math.sin(t * 0.0003);
+          tx = width / 2 + dx * Math.cos(angle) - dy * Math.sin(angle);
+          ty = height / 2 + dx * Math.sin(angle) + dy * Math.cos(angle);
+        }
+
+        // Mouse Gravity
+        const mdx = p.x - mouse.x, mdy = p.y - mouse.y;
+        const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+        if (mdist < 150) {
+          const force = (150 - mdist) * 0.1;
+          p.vx -= (mdx / mdist) * force;
+          p.vy -= (mdy / mdist) * force;
+        }
+
+        // Scroll Dispersal
+        if (scrollProgress > 0.1) {
+          p.vy -= scrollProgress * 5;
+        }
+
+        // Verlet Integration
+        const vx = (p.x - p.px) * DAMPING + p.vx;
+        const vy = (p.y - p.py) * DAMPING + p.vy;
+        p.px = p.x; p.py = p.y;
+        p.x += vx + (tx - p.x) * 0.05;
+        p.y += vy + (ty - p.y) * 0.05;
+        p.vx = p.vy = 0;
+      });
+
+      // Update Particles
+      particles.forEach(p => {
+        const dx = p.x - mouse.x, dy = p.y - mouse.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          const f = 800 / (dist * dist + 10);
+          p.vx += (dx / dist) * f;
+          p.vy += (dy / dist) * f;
+        }
+        p.x += p.vx; p.y += p.vy;
+        p.vx *= 0.98; p.vy *= 0.98;
+        if (p.x < 0) p.x = width; if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height; if (p.y > height) p.y = 0;
+        p.color = palette.glow;
+      });
+    };
+
+    // --- DRAWING ---
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+      const era = PALETTES[state.current.colorEra];
+      const scrollScale = 1 + state.current.scrollProgress * 0.15;
+      const opacity = 1 - state.current.scrollProgress;
+
+      ctx.globalAlpha = opacity;
+      ctx.save();
+      ctx.translate(width / 2, height / 2);
+      ctx.scale(scrollScale, scrollScale);
+      ctx.translate(-width / 2, -height / 2);
+
+      // Starfield
+      if (state.current.offscreen.stars) {
+        ctx.drawImage(state.current.offscreen.stars, state.current.mouse.vx * -0.05, state.current.mouse.vy * -0.05);
+      }
+
+      // God Rays (Atmosphere)
+      drawGodRays(ctx, width, height, era.glow);
+
+      // Cloth Mesh
+      ctx.lineWidth = 0.5;
+      for (let j = 0; j < gridRows; j++) {
+        for (let i = 0; i < gridCols; i++) {
+          const idx = j * (gridCols + 1) + i;
+          const p1 = state.current.points[idx];
+          const p2 = state.current.points[idx + 1];
+          const p3 = state.current.points[idx + gridCols + 2];
+          const p4 = state.current.points[idx + gridCols + 1];
+
+          // Compute fake normal / iridescent color
+          const depth = Math.abs(p1.y - p1.ry) / 50;
+          ctx.fillStyle = `hsla(${era.primary[0]}, ${era.primary[1]}%, ${40 + depth * 20}%, 0.4)`;
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.lineTo(p3.x, p3.y);
+          ctx.lineTo(p4.x, p4.y);
+          ctx.closePath();
+          ctx.fill();
+          
+          if (i % 4 === 0 && j % 4 === 0) {
+            ctx.strokeStyle = `rgba(255,255,255,${0.1 + depth})`;
+            ctx.stroke();
+          }
+        }
+      }
+
+      // Particles
+      state.current.particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.restore();
+
+      // Custom Cursor
+      drawCursor(ctx, state.current.mouse, era.glow);
+
+      animId = requestAnimationFrame(draw);
+    };
+
+    const drawGodRays = (ctx: CanvasRenderingContext2D, w: number, h: number, color: string) => {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 6; i++) {
+        const angle = state.current.time * 0.0001 + (i * Math.PI / 3);
+        const x = w / 2 + Math.cos(angle) * w;
+        const y = -100;
+        const grad = ctx.createRadialGradient(x, y, 0, x, y, w * 1.5);
+        grad.addColorStop(0, color + '22');
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(w / 2 - 200 + i * 100, h);
+        ctx.lineTo(w / 2 + 200 + i * 100, h);
+        ctx.fill();
+      }
+      ctx.restore();
+    };
+
+    const drawCursor = (ctx: CanvasRenderingContext2D, m: any, color: string) => {
+      ctx.save();
+      const s = Math.min(2, 1 + Math.abs(m.vx + m.vy) * 0.05);
+      ctx.translate(m.x, m.y);
+      ctx.scale(s, 1/s);
+      
+      // Ring 1
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, 0, 12, 0, Math.PI * 2);
+      ctx.setLineDash([4, 8]);
+      ctx.lineDashOffset = -state.current.time * 0.01;
+      ctx.stroke();
+
+      // Core
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(0, 0, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    };
+
     const handleMouseMove = (e: MouseEvent) => {
-      mouse.current.x = (e.clientX / width) * 2 - 1;
-      mouse.current.y = -(e.clientY / height) * 2 + 1;
+      const m = state.current.mouse;
+      m.vx = e.clientX - m.x;
+      m.vy = e.clientY - m.y;
+      m.x = e.clientX;
+      m.y = e.clientY;
     };
-    const handleClick = () => {
-      ripple.current = { time: clock.getElapsedTime(), x: mouse.current.x, y: mouse.current.y };
-      fabricMat.uniforms.uRippleTime.value = ripple.current.time;
-      fabricMat.uniforms.uRippleOrigin.value.set(ripple.current.x, ripple.current.y);
-    };
+
     const handleScroll = () => {
-      scroll.current = window.scrollY / (height * 1.5);
+      state.current.scrollProgress = Math.min(1, window.scrollY / window.innerHeight);
     };
+
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mousedown', handleClick);
     window.addEventListener('scroll', handleScroll);
+    init();
+    update(0);
+    draw();
 
-    // --- ANIMATION ---
-    const clock = new THREE.Clock();
-    const palettes = [
-      { a: '#C9A84C', b: '#C4545A' }, // Gold/Rose
-      { a: '#C4545A', b: '#F5F0E8' }, // Rose/Ivory
-      { a: '#F5F0E8', b: '#4FC3F7' }, // Ivory/Teal
-      { a: '#4FC3F7', b: '#C9A84C' }  // Teal/Gold
-    ];
-
-    const animate = () => {
-      const elapsed = clock.getElapsedTime();
-      
-      // Update Uniforms
-      fabricMat.uniforms.uTime.value = elapsed;
-      fabricMat.uniforms.uMouse.value.lerp(new THREE.Vector2(mouse.current.x, mouse.current.y), 0.05);
-      fabricMat.uniforms.uScroll.value = THREE.MathUtils.lerp(fabricMat.uniforms.uScroll.value, scroll.current, 0.1);
-      
-      // Color Cycle (60s)
-      const colorIdx = Math.floor((elapsed % 60) / 15);
-      const nextIdx = (colorIdx + 1) % 4;
-      const colorProgress = (elapsed % 15) / 15;
-      const paletteA = new THREE.Color(palettes[colorIdx].a).lerp(new THREE.Color(palettes[nextIdx].a), colorProgress);
-      const paletteB = new THREE.Color(palettes[colorIdx].b).lerp(new THREE.Color(palettes[nextIdx].b), colorProgress);
-      fabricMat.uniforms.uColorA.value = paletteA;
-      fabricMat.uniforms.uColorB.value = paletteB;
-      fabricMat.uniforms.uColorPhase.value = Math.abs(Math.sin(elapsed * 0.2));
-
-      // Morph Targets (10s cycle)
-      const morphT = elapsed % 10.0;
-      fabricMat.uniforms.uMorphTarget.value = Math.floor(morphT / 2.0);
-      fabricMat.uniforms.uMorphProgress.value = (morphT % 2.0) / 2.0;
-
-      pMat.uniforms.uTime.value = elapsed;
-      pMat.uniforms.uMouse.value.copy(fabricMat.uniforms.uMouse.value);
-      pMat.uniforms.uScroll.value = fabricMat.uniforms.uScroll.value;
-
-      // Camera System
-      const lissajousX = Math.sin(elapsed * 0.5) * 0.1;
-      const lissajousY = Math.cos(elapsed * 0.3) * 0.08;
-      camera.position.z = 5 + Math.sin(elapsed * 0.4) * 0.2 + scroll.current * 4.0;
-      camera.position.x = THREE.MathUtils.lerp(camera.position.x, mouse.current.x * 0.4 + lissajousX, 0.03);
-      camera.position.y = THREE.MathUtils.lerp(camera.position.y, mouse.current.y * 0.3 + lissajousY, 0.03);
-      camera.lookAt(0, 0, -2);
-
-      // Intro Logic
-      if (!introFinished && elapsed > 4.0) setIntroFinished(true);
-
-      // DNA Helix movement
-      helixGroup.rotation.y += 0.01;
-      helix2.rotation.y -= 0.01;
-      helixGroup.position.y = Math.sin(elapsed * 0.5) * 0.5;
-      helix2.position.y = Math.cos(elapsed * 0.5) * 0.5;
-
-      composer.render();
-      requestRef.current = requestAnimationFrame(animate);
-    };
-
-    animate();
+    const simInterval = setInterval(() => update(performance.now()), 16);
 
     return () => {
+      cancelAnimationFrame(animId);
+      clearInterval(simInterval);
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mousedown', handleClick);
       window.removeEventListener('scroll', handleScroll);
-      cancelAnimationFrame(requestRef.current);
-      if ((window as any)._glitchInterval) clearInterval((window as any)._glitchInterval);
-      renderer.dispose();
-      fabricGeo.dispose();
-      fabricMat.dispose();
-      pGeo.dispose();
-      pMat.dispose();
-      strand1.geometry.dispose();
-      strand1.material.dispose();
-      if(containerRef.current) containerRef.current.innerHTML = '';
     };
-  }, [introFinished]);
+  }, []);
 
   return (
-    <div 
-      ref={containerRef} 
-      className="absolute inset-0 z-0 pointer-events-none bg-[#0A0A0F]"
-      style={{ background: 'radial-gradient(circle at center, #0A0A0F 0%, #000000 100%)' }}
-    >
-      <div className="absolute bottom-0 left-0 w-full h-[1px] bg-primary/20 overflow-hidden">
-        {!introFinished && (
-           <div className="h-full bg-primary animate-loading-bar" style={{ width: '100%' }} />
-        )}
-      </div>
-      <style jsx>{`
-        @keyframes loading-bar {
-          from { transform: translateX(-100%); }
-          to { transform: translateX(0); }
-        }
-        .animate-loading-bar {
-          animation: loading-bar 4s linear forwards;
-        }
-      `}</style>
+    <div ref={containerRef} className="absolute inset-0 z-0 overflow-hidden bg-[#0A0A0F]">
+      <canvas 
+        ref={canvasRef} 
+        className="block w-full h-full"
+        style={{ cursor: 'none' }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/10 to-background pointer-events-none" />
     </div>
   );
 };

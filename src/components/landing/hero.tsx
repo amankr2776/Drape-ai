@@ -7,7 +7,7 @@ import { UltraHeroCanvas } from './ultra-hero-canvas';
 
 /**
  * @fileOverview Refined hero section for DRAPE AI.
- * Now featuring the Ultra Cinematic WebGL experience.
+ * Now featuring the Ultra Cinematic physics-based Canvas experience.
  */
 
 export default function Hero() {
@@ -15,7 +15,7 @@ export default function Hero() {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.2, delayChildren: 4.5 }, // Wait for loading sequence
+      transition: { staggerChildren: 0.2, delayChildren: 0.5 },
     },
   };
 
@@ -30,12 +30,9 @@ export default function Hero() {
 
   return (
     <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
-      {/* Cinematic WebGL Background */}
+      {/* High-performance physics-based Canvas */}
       <UltraHeroCanvas />
       
-      {/* Editorial Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background z-[1] pointer-events-none" />
-
       <motion.div
         className="relative z-10 text-center px-4 max-w-6xl"
         variants={containerVariants}
@@ -47,7 +44,7 @@ export default function Hero() {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8"
         >
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-sm font-body tracking-widest text-primary/80 uppercase">Sentient AI Fabric Analysis</span>
+          <span className="text-sm font-body tracking-widest text-primary/80 uppercase">Intelligent Fabric Simulation</span>
         </motion.div>
 
         <motion.h1
@@ -63,7 +60,7 @@ export default function Hero() {
           variants={itemVariants}
           className="font-body text-xl md:text-2xl text-foreground/70 mb-12 max-w-2xl mx-auto"
         >
-          Experience the intersection of liquid metal couture and intelligent silhouette geometry.
+          Experience the intersection of liquid luxury and intelligent silhouette geometry.
         </motion.p>
 
         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-6 justify-center">
@@ -76,11 +73,11 @@ export default function Hero() {
         </motion.div>
       </motion.div>
 
-      {/* Loading Progress Bar Mockup */}
+      {/* Loading Progress Visual */}
       <motion.div 
         initial={{ width: 0 }}
         animate={{ width: '100%' }}
-        transition={{ duration: 4, ease: "easeInOut" }}
+        transition={{ duration: 2, ease: "easeInOut" }}
         className="absolute bottom-0 left-0 h-0.5 bg-primary/50 z-20"
       />
     </section>
