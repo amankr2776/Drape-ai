@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -18,9 +17,7 @@ import {
   Scissors,
   LogOut,
   Settings2,
-  Shield,
-  ChevronRight,
-  TrendingDown
+  ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/hooks/use-store';
@@ -33,11 +30,10 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 
 const navLinks = [
   { href: '/', label: 'Home' },
-  { href: '/how-it-works', label: 'How It Works' },
+  { href: '/how-it-works', label: 'Process' },
   { href: '/discover', label: 'Discover' },
   { href: '/pricing', label: 'Pricing' },
 ];
@@ -57,14 +53,6 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  useEffect(() => {
-    if (isSearchOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-  }, [isSearchOpen]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,21 +79,21 @@ export default function Header() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-32 absolute left-1/2 -translate-x-1/2">
+          <nav className="hidden lg:flex items-center gap-[40px] absolute left-1/2 -translate-x-1/2">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'text-label transition-standard hover:text-gold relative',
-                  pathname === link.href ? 'text-gold' : 'text-ivory-2'
+                  'text-[13px] font-body tracking-[0.06em] uppercase transition-colors duration-200 relative py-2',
+                  pathname === link.href ? 'text-gold' : 'text-ivory-2 hover:text-gold'
                 )}
               >
                 {link.label}
                 {pathname === link.href && (
                   <motion.div
                     layoutId="nav-dot"
-                    className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-4 h-4 bg-gold rounded-full"
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-[4px] h-[4px] bg-gold rounded-full"
                   />
                 )}
               </Link>
@@ -119,7 +107,7 @@ export default function Header() {
                 variant="ghost" 
                 size="icon" 
                 onClick={() => setIsSearchOpen(true)}
-                className="text-ivory-2 hover:text-gold"
+                className="text-ivory-2 hover:text-gold w-10 h-10"
                 aria-label="Search outfits"
               >
                 <Search size={22} strokeWidth={1.5} />
@@ -127,10 +115,10 @@ export default function Header() {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative text-ivory-2 hover:text-gold" aria-label="Notifications">
+                  <Button variant="ghost" size="icon" className="relative text-ivory-2 hover:text-gold w-10 h-10" aria-label="Notifications">
                     <Bell size={22} strokeWidth={1.5} />
                     {unreadCount > 0 && (
-                      <span className="absolute top-2 right-2 w-4 h-4 bg-gold text-obsidian text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-obsidian animate-in zoom-in">
+                      <span className="absolute top-2 right-2 w-4 h-4 bg-gold text-obsidian text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-obsidian">
                         {unreadCount > 9 ? '9+' : unreadCount}
                       </span>
                     )}
@@ -152,35 +140,27 @@ export default function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Link href="/wishlist" className="relative group p-8 text-ivory-2 hover:text-gold transition-colors" aria-label="View wishlist">
+              <Link href="/wishlist" className="relative group p-2 text-ivory-2 hover:text-gold transition-colors" aria-label="View wishlist">
                 <Heart size={22} strokeWidth={1.5} />
                 {wishlist.length > 0 && (
-                  <motion.span 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute top-2 right-2 w-4 h-4 bg-gold text-obsidian text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-obsidian"
-                  >
+                  <span className="absolute top-2 right-1 w-4 h-4 bg-gold text-obsidian text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-obsidian">
                     {wishlist.length > 9 ? '9+' : wishlist.length}
-                  </motion.span>
+                  </span>
                 )}
               </Link>
 
-              <Link href="/cart" className="relative group p-8 text-ivory-2 hover:text-gold transition-colors" aria-label="View shopping bag">
+              <Link href="/cart" className="relative group p-2 text-ivory-2 hover:text-gold transition-colors" aria-label="View shopping bag">
                 <ShoppingBag size={22} strokeWidth={1.5} />
                 {cart.length > 0 && (
-                  <motion.span 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute top-2 right-2 w-4 h-4 bg-gold text-obsidian text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-obsidian"
-                  >
+                  <span className="absolute top-2 right-1 w-4 h-4 bg-gold text-obsidian text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-obsidian">
                     {cart.length > 9 ? '9+' : cart.length}
-                  </motion.span>
+                  </span>
                 )}
               </Link>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-ivory-2 hover:text-gold" aria-label="User profile">
+                  <Button variant="ghost" size="icon" className="text-ivory-2 hover:text-gold w-10 h-10" aria-label="User profile">
                     <UserCircle size={22} strokeWidth={1.5} />
                   </Button>
                 </DropdownMenuTrigger>
@@ -213,7 +193,11 @@ export default function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button size="sm" asChild className="hidden sm:flex ml-4">
+              <Button 
+                variant="primary" 
+                className="hidden sm:flex ml-4 h-[40px] px-6 rounded-[6px] text-[12px] font-semibold tracking-[0.08em] uppercase hover:bg-gold-light hover:translate-y-[-1px] hover:shadow-[0_4px_16px_rgba(201,168,76,0.35)]" 
+                asChild
+              >
                 <Link href="/onboarding">Get Styled</Link>
               </Button>
             </div>
@@ -259,21 +243,6 @@ export default function Header() {
                   className="w-full h-80 bg-obsidian-2 border-b-2 border-gold/20 focus:border-gold outline-none text-display pl-72 pr-24 transition-all placeholder:text-ivory-4"
                 />
               </div>
-              <div className="flex flex-wrap gap-12 justify-center">
-                {['Silk Saree', 'Linen Blazer', 'Chikankari Kurta', 'Date Night', 'Office Wear'].map(tag => (
-                  <button
-                    key={tag}
-                    onClick={() => {
-                      setSearchQuery(tag);
-                      router.push(`/discover?q=${encodeURIComponent(tag)}`);
-                      setIsSearchOpen(false);
-                    }}
-                    className="h-40 px-24 rounded-pill border border-border text-label text-ivory-2 hover:border-gold hover:text-gold transition-all"
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
             </form>
           </motion.div>
         )}
@@ -313,17 +282,6 @@ export default function Header() {
                 </Link>
               ))}
             </nav>
-            <div className="mt-auto pt-48 border-t border-border space-y-24">
-              <Button size="lg" className="w-full" asChild onClick={() => setIsMobileMenuOpen(false)}>
-                <Link href="/onboarding">Analyze My Style</Link>
-              </Button>
-              <div className="flex justify-center gap-24 text-ivory-3">
-                <Link href="/privacy-policy" className="text-caption hover:text-gold">Privacy</Link>
-                <Link href="/terms" className="text-caption hover:text-gold">Terms</Link>
-                <Link href="/contact" className="text-caption hover:text-gold">Contact</Link>
-              </div>
-              <p className="text-center text-[10px] uppercase tracking-[0.3em] text-ivory-4">DRAPE AI ATELIER © 2024</p>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>

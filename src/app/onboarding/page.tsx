@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -6,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
-import { Camera, ArrowRight, ArrowLeft, Check, Sparkles } from 'lucide-react';
+import { Camera, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
@@ -44,18 +43,19 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen pt-[120px] pb-96 px-24">
+    <div className="min-h-screen pt-[120px] pb-[160px] px-24 bg-background overflow-x-hidden">
       <div className="max-w-xl mx-auto w-full">
-        {/* Progress */}
-        <div className="flex gap-8 mb-48 justify-center">
+        {/* Progress Dots */}
+        <div className="flex gap-[6px] mb-48 justify-center items-center">
           {STEPS.map((_, i) => (
-            <div 
+            <motion.div 
               key={i} 
-              className={cn(
-                "h-4 rounded-full transition-standard",
-                i === step ? "w-32 bg-gold" : "w-8 bg-obsidian-3",
-                i < step && "bg-gold/40"
-              )} 
+              initial={false}
+              animate={{ 
+                width: i === step ? 24 : 6,
+                backgroundColor: i === step ? '#C9A84C' : i < step ? 'rgba(201,168,76,0.6)' : 'rgba(201,168,76,0.25)'
+              }}
+              className="h-[6px] rounded-full transition-all duration-300" 
             />
           ))}
         </div>
@@ -66,6 +66,7 @@ export default function OnboardingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
             className="space-y-32 text-center"
           >
             <div className="space-y-8">
@@ -75,7 +76,7 @@ export default function OnboardingPage() {
 
             <div className="py-24">
               {step === 0 && (
-                <div className="flex flex-wrap gap-12 justify-center">
+                <div className="flex flex-wrap gap-12 justify-center max-w-[640px] mx-auto">
                   {['Wedding', 'Office', 'Date Night', 'Festive', 'Gym', 'Casual', 'Travel'].map(occ => (
                     <button
                       key={occ}
@@ -86,8 +87,10 @@ export default function OnboardingPage() {
                         updateData('occasions', next);
                       }}
                       className={cn(
-                        "h-48 px-24 rounded-pill border transition-standard text-sm uppercase tracking-widest font-bold",
-                        formData.occasions.includes(occ) ? "bg-gold text-obsidian border-gold" : "border-border text-ivory-3 hover:border-gold/30"
+                        "h-[48px] px-28 rounded-[100px] border text-[13px] font-body tracking-[0.04em] font-medium transition-all duration-200 active:scale-[0.97]",
+                        formData.occasions.includes(occ) 
+                          ? "bg-[rgba(201,168,76,0.15)] border-gold text-gold font-semibold shadow-[0_0_12px_rgba(201,168,76,0.15)_inset]" 
+                          : "bg-[rgba(201,168,76,0.04)] border-[rgba(201,168,76,0.2)] text-ivory-2 hover:border-[rgba(201,168,76,0.45)] hover:bg-[rgba(201,168,76,0.08)] hover:text-ivory hover:translate-y-[-1px]"
                       )}
                     >
                       {occ}
@@ -98,7 +101,7 @@ export default function OnboardingPage() {
 
               {step === 1 && (
                 <div className="space-y-24">
-                  <div className="flex justify-between text-h3 font-normal">
+                  <div className="flex justify-between text-h3 font-normal text-gold">
                     <span>₹{formData.budget[0]}</span>
                     <span>₹{formData.budget[1]}+</span>
                   </div>
@@ -120,12 +123,12 @@ export default function OnboardingPage() {
                       key={v}
                       onClick={() => updateData('vibe', v)}
                       className={cn(
-                        "p-24 rounded-card border transition-standard text-left group",
+                        "p-24 rounded-card border transition-all duration-300 text-left group active:scale-[0.97]",
                         formData.vibe === v ? "bg-gold/10 border-gold shadow-gold" : "bg-obsidian-2 border-border"
                       )}
                     >
                       <div className="w-full aspect-[4/5] bg-obsidian-3 rounded-card mb-12 overflow-hidden">
-                        <img src={`https://picsum.photos/seed/${v}/300/400`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-standard" alt={v} />
+                        <img src={`https://picsum.photos/seed/${v}/300/400`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt={v} />
                       </div>
                       <p className={cn("text-label", formData.vibe === v ? "text-gold" : "text-ivory-2")}>{v}</p>
                     </button>
@@ -144,8 +147,8 @@ export default function OnboardingPage() {
                           key={s}
                           onClick={() => updateData('size', s)}
                           className={cn(
-                            "flex-1 h-48 rounded-button border font-bold transition-standard",
-                            formData.size === s ? "bg-gold text-obsidian border-gold" : "border-border hover:border-gold/30"
+                            "flex-1 h-48 rounded-[8px] border font-semibold transition-all duration-200 active:scale-[0.97]",
+                            formData.size === s ? "bg-gold text-obsidian border-gold" : "border-border text-ivory-2 hover:border-gold/30 hover:bg-gold/5"
                           )}
                         >
                           {s}
@@ -158,8 +161,8 @@ export default function OnboardingPage() {
 
               {step === 4 && (
                 <div className="space-y-24">
-                  <div className="w-full aspect-square rounded-card border-2 border-dashed border-gold/30 bg-gold/5 flex flex-col items-center justify-center cursor-pointer hover:bg-gold/10 transition-standard group">
-                    <div className="p-24 rounded-full bg-gold/20 mb-12 group-hover:scale-110 transition-standard">
+                  <div className="w-full aspect-square rounded-card border-2 border-dashed border-gold/30 bg-gold/5 flex flex-col items-center justify-center cursor-pointer hover:bg-gold/10 transition-all group">
+                    <div className="p-24 rounded-full bg-gold/20 mb-12 group-hover:scale-110 transition-all">
                       <Camera size={32} className="text-gold" />
                     </div>
                     <p className="text-h3 text-gold">Upload your photo</p>
@@ -176,17 +179,29 @@ export default function OnboardingPage() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Actions */}
-        <div className="fixed bottom-48 left-0 right-0 flex justify-center">
-          <div className="max-w-xl w-full flex gap-12 px-24">
+        {/* Action Button */}
+        <div className="fixed bottom-40 left-0 right-0 flex justify-center z-[50]">
+          <div className="w-full max-w-xl px-24 flex items-center justify-center gap-12">
             {step > 0 && (
-              <Button variant="outline" size="lg" onClick={handleBack} className="flex-1">
-                <ArrowLeft className="mr-8 w-16 h-16" /> Back
+              <Button 
+                variant="secondary" 
+                size="md" 
+                onClick={handleBack} 
+                className="h-[48px] px-8 rounded-[8px] min-w-[120px] transition-all"
+              >
+                <ArrowLeft className="mr-2 w-4 h-4" /> Back
               </Button>
             )}
-            <Button size="lg" onClick={handleNext} className="flex-[2] group">
+            <Button 
+              size="md" 
+              onClick={handleNext} 
+              className={cn(
+                "h-[48px] px-10 rounded-[8px] min-w-[180px] max-w-[260px] group transition-all",
+                step === 0 && "mx-auto"
+              )}
+            >
               {step === STEPS.length - 1 ? 'Start Analysis' : 'Continue'} 
-              <ArrowRight className="ml-8 w-16 h-16 group-hover:translate-x-4 transition-standard" />
+              <ArrowRight className="ml-2 w-4 h-4 transition-transform duration-200 group-hover:translate-x-[4px]" />
             </Button>
           </div>
         </div>
