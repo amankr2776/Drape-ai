@@ -1,100 +1,90 @@
+
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Camera, FilePenLine, BrainCircuit, Shirt } from 'lucide-react';
+import { useRef } from 'react';
 
 const steps = [
   {
     icon: Camera,
     title: 'Upload Photo',
-    description: 'Snap a full-body picture. Our AI needs just one image to work its magic.',
+    description: 'Snap a full-body picture. Our AI needs just one image to define your geometry.',
   },
   {
     icon: FilePenLine,
     title: 'Enter Details',
-    description: 'Tell us about the occasion, your style preferences, and any specific needs.',
+    description: 'Tell us the occasion, your style preference, and your aspirational vibe.',
   },
   {
     icon: BrainCircuit,
     title: 'AI Analyzes',
-    description: 'Our advanced algorithm processes your data to find the perfect styles for you.',
+    description: 'Our Groq-powered engine correlates your data with 50,000+ fashion permutations.',
   },
   {
     icon: Shirt,
     title: 'Get Styled',
-    description: 'Receive a personalized set of outfit recommendations, complete with styling tips.',
+    description: 'Receive a curated editorial report with shoppable links at best-market prices.',
   },
 ];
 
-const HowItWorks = () => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.3,
-        delayChildren: 0.2,
-      },
-    },
-  };
+export default function HowItWorks() {
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
 
-  const itemVariants = {
-    hidden: { y: 30, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        ease: 'easeOut',
-      },
-    },
-  };
+  const pathLength = useTransform(scrollYProgress, [0.2, 0.8], [0, 1]);
 
   return (
-    <section id="how-it-works" className="py-20 sm:py-32 bg-card">
-      <div className="container mx-auto text-center">
-        <motion.h2 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+    <section id="how-it-works" ref={containerRef} className="py-24 md:py-40 bg-card relative overflow-hidden">
+      <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-4xl md:text-5xl font-headline text-primary mb-16"
+          className="text-center mb-24"
         >
-          How It Works
-        </motion.h2>
+          <h2 className="font-headline text-5xl md:text-7xl text-primary mb-4">The Atelier Process</h2>
+          <div className="w-24 h-1 bg-primary mx-auto"></div>
+        </motion.div>
 
         <div className="relative">
-          {/* Desktop view */}
-          <div className="hidden md:block absolute top-1/2 left-0 w-full h-px bg-border -translate-y-1/2"></div>
-          <div className="hidden md:block absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0" style={{ transform: 'translateY(-50%) scaleX(0.9)', opacity: 0.7 }}></div>
-          
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 relative"
-          >
+          {/* Animated Connecting Line */}
+          <div className="hidden md:block absolute top-[48px] left-[12.5%] right-[12.5%] h-px bg-border z-0">
+            <motion.div 
+              style={{ scaleX: pathLength, originX: 0 }}
+              className="absolute inset-0 bg-primary h-full"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-16 md:gap-8 relative z-10">
             {steps.map((step, index) => (
-              <motion.div key={index} variants={itemVariants} className="flex flex-col items-center text-center">
-                <div className="relative mb-6">
-                    <div className="absolute -inset-2 rounded-full bg-primary/10 blur-xl"></div>
-                    <div className="relative z-10 flex items-center justify-center h-24 w-24 rounded-full bg-background border-2 border-primary">
-                      <step.icon className="h-12 w-12 text-primary" />
-                    </div>
-                    <div className="absolute -bottom-8 -right-4 font-headline text-[120px] text-primary/5 opacity-50 select-none">
-                      0{index + 1}
-                    </div>
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.15, duration: 0.6 }}
+                className="flex flex-col items-center text-center group"
+              >
+                <div className="relative mb-10">
+                  <div className="absolute -inset-4 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/20 transition-colors"></div>
+                  <div className="relative w-24 h-24 rounded-full bg-background border border-primary/30 flex items-center justify-center transition-transform duration-500 group-hover:scale-110 group-hover:border-primary">
+                    <step.icon className="h-10 w-10 text-primary" />
+                  </div>
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-headline text-[120px] text-primary/5 opacity-50 -z-10 select-none">
+                    0{index + 1}
+                  </div>
                 </div>
-                <h3 className="text-xl font-headline font-semibold mt-4 text-ivory">{step.title}</h3>
-                <p className="mt-2 text-foreground/70 max-w-xs">{step.description}</p>
+                <h3 className="font-headline text-2xl text-foreground mb-4">{step.title}</h3>
+                <p className="font-body text-foreground/60 leading-relaxed max-w-[200px]">{step.description}</p>
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
   );
-};
-
-export default HowItWorks;
+}

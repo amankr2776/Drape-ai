@@ -1,89 +1,157 @@
+
 'use client';
 
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import Image from 'next/image';
+import { useEffect, useRef } from 'react';
+import * as THREE from 'three';
 
-const Hero = () => {
+export default function Hero() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // Plane Geometry for the fabric
+    const geometry = new THREE.PlaneGeometry(15, 15, 64, 64);
+    
+    // Shader-like Material for the golden flowing fabric
+    const material = new THREE.MeshStandardMaterial({
+      color: 0xC9A84C,
+      metalness: 0.9,
+      roughness: 0.2,
+      wireframe: false,
+      side: THREE.DoubleSide,
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.rotation.x = -Math.PI / 3;
+    scene.add(mesh);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+
+    const pointLight = new THREE.PointLight(0xffffff, 1.5);
+    pointLight.position.set(5, 5, 5);
+    scene.add(pointLight);
+
+    camera.position.z = 8;
+
+    // Mouse interaction
+    const mouse = new THREE.Vector2();
+    const handleMouseMove = (event: MouseEvent) => {
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+
+    const animate = () => {
+      const time = Date.now() * 0.001;
+      const positions = geometry.attributes.position;
+
+      for (let i = 0; i < positions.count; i++) {
+        const x = positions.getX(i);
+        const y = positions.getY(i);
+
+        // Create wave effect
+        const waveX = Math.sin(x * 0.5 + time) * 0.5;
+        const waveY = Math.cos(y * 0.5 + time) * 0.5;
+        const mouseInteraction = Math.exp(-Math.pow(x - mouse.x * 5, 2) - Math.pow(y - mouse.y * 5, 2)) * 1.5;
+
+        positions.setZ(i, waveX + waveY + mouseInteraction);
+      }
+      positions.needsUpdate = true;
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    const handleResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
+      transition: { staggerChildren: 0.2, delayChildren: 0.5 },
     },
   };
 
   const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { y: 30, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
-      transition: {
-        duration: 0.8,
-        ease: 'easeOut',
-      },
+      transition: { duration: 0.8, ease: 'easeOut' },
     },
   };
 
   return (
-    <section className="relative flex h-screen min-h-[700px] w-full flex-col items-center justify-center overflow-hidden text-center text-ivory">
-      <div className="absolute inset-0 z-0">
-        <Image
-          src="https://picsum.photos/seed/fabric-gold/1920/1080"
-          alt="Flowing golden fabric"
-          fill
-          priority
-          className="object-cover opacity-30"
-          data-ai-hint="abstract gold fabric"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-transparent"></div>
-      </div>
+    <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
+      <canvas ref={canvasRef} className="absolute inset-0 z-0" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/60 to-background z-1"></div>
+
       <motion.div
-        className="relative z-10 flex flex-col items-center p-4"
+        className="relative z-10 text-center px-4 max-w-6xl"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        <motion.h1
-          className="font-headline text-5xl md:text-7xl lg:text-8xl leading-tight"
+        <motion.div
           variants={itemVariants}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8 animate-pulse"
+        >
+          <span className="w-2 h-2 rounded-full bg-primary"></span>
+          <span className="text-sm font-body tracking-widest text-primary/80 uppercase">Powered by Groq AI</span>
+        </motion.div>
+
+        <motion.h1
+          variants={itemVariants}
+          className="font-headline text-6xl md:text-8xl lg:text-9xl text-foreground leading-[0.9] mb-6"
         >
           Dress Like You Were
           <br />
           Designed For It
         </motion.h1>
+
         <motion.p
-          className="mt-4 max-w-xl font-body text-lg md:text-xl bg-muted-gold"
           variants={itemVariants}
+          className="font-body text-xl md:text-2xl text-primary/70 mb-12 max-w-2xl mx-auto"
         >
           AI that reads your body. Styles your soul.
         </motion.p>
-        <motion.div className="mt-8 flex flex-col sm:flex-row gap-4" variants={itemVariants}>
-          <Link href="/onboarding" passHref>
-            <Button size="lg" className="font-headline text-lg tracking-wider">
-              Analyze My Style
-            </Button>
-          </Link>
-          <Link href="/how-it-works" passHref>
-            <Button size="lg" variant="outline" className="font-headline text-lg tracking-wider border-gold text-ivory hover:bg-primary/10">
-              See How It Works
-            </Button>
-          </Link>
-        </motion.div>
-        <motion.div
-          className="absolute -bottom-20"
-          variants={itemVariants}
-        >
-          <div className="relative mt-8 animate-pulse">
-            <span className="font-body text-sm text-foreground/50">Powered by Groq AI</span>
-          </div>
+
+        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-6 justify-center">
+          <Button asChild size="lg" className="h-14 px-10 rounded-none font-headline text-xl tracking-widest transition-transform hover:scale-105">
+            <Link href="/onboarding">Analyze My Style</Link>
+          </Button>
+          <Button asChild variant="outline" size="lg" className="h-14 px-10 rounded-none border-primary text-primary font-headline text-xl tracking-widest hover:bg-primary/10 transition-transform hover:scale-105">
+            <Link href="/how-it-works">See How It Works</Link>
+          </Button>
         </motion.div>
       </motion.div>
     </section>
   );
-};
-
-export default Hero;
+}
