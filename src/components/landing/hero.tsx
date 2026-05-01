@@ -3,12 +3,11 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { DrapeHeroCanvas } from './drape-hero-canvas';
 import { ArrowRight } from 'lucide-react';
 
 /**
  * @fileOverview Refined hero section for DRAPE AI.
- * Featuring the DrapeHeroCanvas and premium interactive CTAs.
+ * Now features a clean, static high-fashion background for a distraction-free entry.
  */
 
 export default function Hero() {
@@ -30,9 +29,13 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
-      {/* High-fidelity WebGL Canvas */}
-      <DrapeHeroCanvas />
+    <section className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-background">
+      {/* Premium Static Background Gradient */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-[#0A0A0F]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0A0A0F] to-transparent" />
+      </div>
       
       <motion.div
         className="relative z-10 text-center px-4 max-w-6xl pointer-events-none"
@@ -76,14 +79,6 @@ export default function Hero() {
           </Button>
         </motion.div>
       </motion.div>
-
-      {/* Loading Progress Visual */}
-      <motion.div 
-        initial={{ width: 0 }}
-        animate={{ width: '100%' }}
-        transition={{ duration: 2, ease: "easeInOut" }}
-        className="absolute bottom-0 left-0 h-0.5 bg-primary/50 z-20"
-      />
     </section>
   );
 }
