@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -13,8 +12,7 @@ import {
   ChevronRight, 
   X,
   ShieldCheck,
-  Package,
-  CreditCard
+  Package
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -47,15 +45,6 @@ export default function CartPage() {
       case 'Flipkart': return 'https://flipkart.com';
       case 'Meesho': return 'https://meesho.com';
       default: return '#';
-    }
-  };
-
-  const getPlatformColor = (platform: string) => {
-    switch (platform) {
-      case 'Amazon': return 'text-[#FF9900] bg-[#FF9900]/10 border-[#FF9900]/20';
-      case 'Flipkart': return 'text-[#2874F0] bg-[#2874F0]/10 border-[#2874F0]/20';
-      case 'Meesho': return 'text-[#F43397] bg-[#F43397]/10 border-[#F43397]/20';
-      default: return 'text-gold bg-gold/10 border-gold/20';
     }
   };
 
@@ -130,7 +119,6 @@ export default function CartPage() {
                               <button 
                                 onClick={() => removeFromCart(item.id)}
                                 className="p-8 text-ivory-4 hover:text-rose hover:bg-rose/10 rounded-full transition-all"
-                                aria-label="Remove item"
                               >
                                 <X size={16} />
                               </button>
