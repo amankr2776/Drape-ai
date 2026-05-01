@@ -25,7 +25,8 @@ import {
   Smartphone,
   CreditCard,
   Download,
-  AlertTriangle
+  AlertTriangle,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,7 +36,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/avatar';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { 
@@ -50,12 +51,15 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useSubscription } from '@/hooks/use-subscription';
+import { ProBadge } from '@/components/subscription/pro-badge';
 
 export default function ProfilePage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState('');
+  const { plan, isPro, cancelSubscription } = useSubscription();
 
   // Mock Data
   const [profile, setProfile] = useState({
@@ -97,9 +101,9 @@ export default function ProfilePage() {
           {/* Profile Image */}
           <div className="relative group mb-6">
             <motion.div 
-              animate={{ boxShadow: ["0 0 0 0px rgba(201,168,76,0.3)", "0 0 0 10px rgba(201,168,76,0)"] }}
+              animate={{ boxShadow: isPro ? ["0 0 0 0px rgba(201,168,76,0.3)", "0 0 0 10px rgba(201,168,76,0)"] : "none" }}
               transition={{ repeat: Infinity, duration: 2 }}
-              className="rounded-full p-1 bg-primary/20"
+              className={cn("rounded-full p-1", isPro ? "bg-primary/20" : "bg-muted")}
             >
               <Avatar className="w-32 h-32 border-4 border-background">
                 <AvatarImage src="https://picsum.photos/seed/ananya/200/200" alt={profile.name} />
@@ -109,9 +113,17 @@ export default function ProfilePage() {
             <button className="absolute bottom-0 right-0 p-2 bg-primary rounded-full text-primary-foreground shadow-lg hover:scale-110 transition-transform">
               <Camera size={18} />
             </button>
+            {isPro && (
+              <div className="absolute -top-2 -right-2">
+                <ProBadge size="lg" />
+              </div>
+            )}
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground mb-1">{profile.name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground mb-1">{profile.name}</h1>
+            {isPro && <ProBadge size="md" />}
+          </div>
           <p className="text-primary font-body tracking-[0.2em] uppercase text-sm mb-2">{profile.handle}</p>
           <p className="text-foreground/40 text-xs mb-8">Style Member since {profile.memberSince}</p>
 
@@ -496,27 +508,42 @@ export default function ProfilePage() {
               <h3 className="text-2xl font-headline text-primary border-l-4 border-primary pl-4">Atelier Membership</h3>
               <Card className="bg-primary/5 border-primary/20 relative overflow-hidden p-8">
                  <div className="absolute top-0 right-0 p-4">
-                    <Badge className="bg-primary text-primary-foreground font-headline text-lg px-4 py-1">PRO</Badge>
+                    {isPro ? <ProBadge size="lg" /> : <Badge variant="secondary">FREE</Badge>}
                  </div>
                  <div className="space-y-6">
                     <div>
-                      <h4 className="text-3xl font-headline mb-2">The Elite Atelier Plan</h4>
-                      <p className="text-sm text-foreground/60">Unlimited style analysis, priority price alerts, and exclusive Sabyasachi access.</p>
+                      <h4 className="text-3xl font-headline mb-2">{isPro ? 'The Elite Atelier Plan' : 'Free Style Enthusiast'}</h4>
+                      <p className="text-sm text-foreground/60">
+                        {isPro 
+                          ? 'Unlimited style analysis, priority price alerts, and exclusive access.' 
+                          : 'Basic silhouette analysis and standard marketplace results.'}
+                      </p>
                     </div>
-                    <div className="flex items-center gap-8">
-                       <div>
-                          <p className="text-[10px] uppercase tracking-widest text-foreground/40">Renewal Date</p>
-                          <p className="text-lg font-bold">May 12, 2026</p>
-                       </div>
-                       <div>
-                          <p className="text-[10px] uppercase tracking-widest text-foreground/40">Billing cycle</p>
-                          <p className="text-lg font-bold">Annual</p>
-                       </div>
-                    </div>
-                    <div className="flex gap-4">
-                       <Button className="bg-primary text-primary-foreground font-headline tracking-widest">Manage Billing</Button>
-                       <Button variant="ghost" className="text-foreground/40 hover:text-accent">Cancel Membership</Button>
-                    </div>
+                    {isPro ? (
+                      <div className="flex items-center gap-8">
+                        <div>
+                            <p className="text-[10px] uppercase tracking-widest text-foreground/40">Renewal Date</p>
+                            <p className="text-lg font-bold">May 12, 2026</p>
+                        </div>
+                        <div>
+                            <p className="text-[10px] uppercase tracking-widest text-foreground/40">Billing cycle</p>
+                            <p className="text-lg font-bold">Annual</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <p className="text-xs text-primary font-bold">Upgrade to Pro for unlimited AI intelligence.</p>
+                        <Button asChild className="bg-primary text-primary-foreground font-headline tracking-widest">
+                          <Link href="/pricing">Upgrade Now</Link>
+                        </Button>
+                      </div>
+                    )}
+                    {isPro && (
+                      <div className="flex gap-4">
+                        <Button variant="outline" className="border-primary/20 font-headline tracking-widest">Manage Billing</Button>
+                        <Button variant="ghost" onClick={cancelSubscription} className="text-foreground/40 hover:text-accent">Cancel Membership</Button>
+                      </div>
+                    )}
                  </div>
               </Card>
             </div>

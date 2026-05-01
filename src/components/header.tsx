@@ -16,11 +16,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { Menu, X, Search, ShoppingBag, LogOut, Settings, History } from 'lucide-react';
+import { Menu, X, Search, ShoppingBag, LogOut, Settings, History, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AuthDrawer } from './auth-drawer';
 import { Input } from './ui/input';
 import { NotificationBell } from './notifications/notification-bell';
+import { useSubscription } from '@/hooks/use-subscription';
+import { ProBadge } from './subscription/pro-badge';
 
 const mainNav = [
   { href: '/', label: 'Home' },
@@ -41,6 +43,7 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const pathname = usePathname();
+  const { isPro } = useSubscription();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -116,13 +119,21 @@ export default function Header() {
                       <AvatarImage src="https://picsum.photos/seed/avatar-user/100/100" alt="User" />
                       <AvatarFallback>AS</AvatarFallback>
                     </Avatar>
+                    {isPro && (
+                      <div className="absolute top-0 right-0">
+                        <ProBadge />
+                      </div>
+                    )}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-64 bg-background/95 backdrop-blur-xl border-primary/10 mt-2" align="end">
                   <DropdownMenuLabel className="font-normal p-4">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-headline text-primary tracking-wide">Ananya Sharma</p>
-                      <p className="text-xs text-foreground/40 font-body">Elite Member</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-headline text-primary tracking-wide">Ananya Sharma</p>
+                        {isPro && <ProBadge size="sm" />}
+                      </div>
+                      <p className="text-xs text-foreground/40 font-body">{isPro ? 'Elite Pro Member' : 'Style Enthusiast'}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-primary/10" />
