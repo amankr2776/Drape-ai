@@ -4,8 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
-import * as THREE from 'this-is-placeholder-do-not-actually-use'; // This will be handled by the build system correctly as 'three'
-import * as THREE_ACTUAL from 'three';
+import * as THREE from 'three';
 
 export default function Hero() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -14,41 +13,36 @@ export default function Hero() {
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const scene = new THREE_ACTUAL.Scene();
-    const camera = new THREE_ACTUAL.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE_ACTUAL.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // Plane Geometry for the fabric
-    const geometry = new THREE_ACTUAL.PlaneGeometry(15, 15, 64, 64);
-    
-    // Shader-like Material for the golden flowing fabric
-    const material = new THREE_ACTUAL.MeshStandardMaterial({
+    const geometry = new THREE.PlaneGeometry(15, 15, 64, 64);
+    const material = new THREE.MeshStandardMaterial({
       color: 0xC9A84C,
       metalness: 0.9,
       roughness: 0.2,
       wireframe: false,
-      side: THREE_ACTUAL.DoubleSide,
+      side: THREE.DoubleSide,
     });
 
-    const mesh = new THREE_ACTUAL.Mesh(geometry, material);
+    const mesh = new THREE.Mesh(geometry, material);
     mesh.rotation.x = -Math.PI / 3;
     scene.add(mesh);
 
-    // Lights
-    const ambientLight = new THREE_ACTUAL.AmbientLight(0xffffff, 0.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
-    const pointLight = new THREE_ACTUAL.PointLight(0xffffff, 1.5);
+    const pointLight = new THREE.PointLight(0xffffff, 1.5);
     pointLight.position.set(5, 5, 5);
     scene.add(pointLight);
 
     camera.position.z = 8;
 
-    // Mouse interaction
-    const mouse = new THREE_ACTUAL.Vector2();
+    const mouse = new THREE.Vector2();
     const handleMouseMove = (event: MouseEvent) => {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
@@ -62,12 +56,9 @@ export default function Hero() {
       for (let i = 0; i < positions.count; i++) {
         const x = positions.getX(i);
         const y = positions.getY(i);
-
-        // Create wave effect
         const waveX = Math.sin(x * 0.5 + time) * 0.5;
         const waveY = Math.cos(y * 0.5 + time) * 0.5;
         const mouseInteraction = Math.exp(-Math.pow(x - mouse.x * 5, 2) - Math.pow(y - mouse.y * 5, 2)) * 1.5;
-
         positions.setZ(i, waveX + waveY + mouseInteraction);
       }
       positions.needsUpdate = true;
@@ -88,6 +79,8 @@ export default function Hero() {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
+      renderer.dispose();
+      scene.clear();
     };
   }, []);
 

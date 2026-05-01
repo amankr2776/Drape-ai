@@ -1,4 +1,3 @@
-
 'use client';
 
 import { motion } from 'framer-motion';
@@ -9,7 +8,7 @@ import SocialProof from '@/components/landing/social-proof';
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-background overflow-x-hidden">
+    <div className="overflow-x-hidden">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -18,7 +17,7 @@ export default function Home() {
         <Hero />
       </motion.div>
 
-      <main className="flex-grow">
+      <div className="space-y-0">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -45,7 +44,7 @@ export default function Home() {
         >
           <SocialProof />
         </motion.div>
-      </main>
+      </div>
     </div>
   );
 }
