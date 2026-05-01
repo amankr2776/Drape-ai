@@ -1,282 +1,263 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+'use client';
+
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Heart, Star, SlidersHorizontal, Trash2 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Separator } from '@/components/ui/separator';
+import { 
+  Heart, 
+  ShoppingBag, 
+  Sparkles, 
+  Filter, 
+  SlidersHorizontal,
+  ArrowRight,
+  Star,
+  CheckCircle2,
+  X
+} from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { useStore, type Product } from '@/hooks/use-store';
+import { cn } from '@/lib/utils';
 
-const outfits = [
+const MOCK_RESULTS: Product[] = [
   {
-    id: 1,
-    name: 'Opulent Ochre Sari',
-    image: 'https://picsum.photos/seed/result1/600/900',
-    aiReason: 'The vertical draping elongates your pear-shaped figure gracefully.',
+    id: '1',
+    name: 'Royal Heritage Silk Sari',
+    brand: 'Kala Sanskruti',
+    price: 8499,
+    originalPrice: 11999,
+    discount: 30,
     platform: 'Myntra',
-    price: '₹7,899',
+    imageUrl: 'https://picsum.photos/seed/outfit1/800/1200',
+    aiReason: 'The vertical weave elongates your silhouette, balancing your frame perfectly.',
     rating: 4.8,
-    reviews: 124,
-    size: 'lg'
+    reviews: 842,
+    link: '#'
   },
   {
-    id: 2,
-    name: 'Midnight Bloom Anarkali',
-    image: 'https://picsum.photos/seed/result2/600/800',
-    aiReason: 'The A-line cut balances your proportions perfectly.',
+    id: '2',
+    name: 'Modern Anarkali Set',
+    brand: 'Vibe India',
+    price: 4200,
     platform: 'Amazon',
-    price: '₹4,200',
+    imageUrl: 'https://picsum.photos/seed/outfit2/800/1200',
+    aiReason: 'A-line cut flares from the waist, ideal for a balanced pear-shaped look.',
     rating: 4.5,
-    reviews: 258,
-    size: 'sm'
+    reviews: 1205,
+    link: '#'
   },
   {
-    id: 3,
-    name: 'Ivory Dream Lehenga',
-    image: 'https://picsum.photos/seed/result3/600/900',
-    aiReason: 'Adds volume to the upper body, creating an hourglass illusion.',
+    id: '3',
+    name: 'Linen Fusion Kurta',
+    brand: 'Minimalist',
+    price: 1899,
     platform: 'Flipkart',
-    price: '₹12,500',
-    rating: 4.9,
-    reviews: 88,
-    size: 'lg'
-  },
-  {
-    id: 4,
-    name: 'Crimson Tide Kurta',
-    image: 'https://picsum.photos/seed/result4/600/700',
-    aiReason: 'The straight cut skims over the hips, creating a sleek silhouette.',
-    platform: 'Meesho',
-    price: '₹1,299',
+    imageUrl: 'https://picsum.photos/seed/outfit3/800/1200',
+    aiReason: 'Breathable fabric with a structured shoulder to broaden your upper body.',
     rating: 4.2,
-    reviews: 512,
-    size: 'sm'
+    reviews: 320,
+    link: '#'
   },
   {
-    id: 5,
-    name: 'Emerald Enchantress Gown',
-    image: 'https://picsum.photos/seed/result5/600/950',
-    aiReason: 'A floor-length gown that creates a stunning vertical line.',
-    platform: 'Amazon',
-    price: '₹9,999',
-    rating: 4.7,
-    reviews: 150,
-    size: 'lg'
-  },
-  {
-    id: 6,
-    name: 'Sunset Hues Sharara',
-    image: 'https://picsum.photos/seed/result6/600/850',
-    aiReason: 'Flared bottoms balance wider hips, perfect for a pear shape.',
-    platform: 'Myntra',
-    price: '₹6,450',
-    rating: 4.6,
-    reviews: 95,
-    size: 'sm'
-  },
-]
+    id: '4',
+    name: 'Velvet Evening Gown',
+    brand: 'Luxe Wear',
+    price: 12500,
+    originalPrice: 15000,
+    discount: 15,
+    platform: 'Meesho',
+    imageUrl: 'https://picsum.photos/seed/outfit4/800/1200',
+    aiReason: 'The deep neckline draws attention upward, highlighting your neck and face.',
+    rating: 4.9,
+    reviews: 58,
+    link: '#'
+  }
+];
 
-const ResultsPage = () => {
+export default function ResultsPage() {
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const { wishlist, cart, toggleWishlist, addToCart, isInWishlist, isInCart } = useStore();
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-sm py-4 mb-8 -mx-4 px-4 border-b border-border">
-        <div className="container mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="font-headline">
-                  <SlidersHorizontal className="mr-2 h-4 w-4" /> Sort By
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem>Price: Low to High</DropdownMenuItem>
-                <DropdownMenuItem>Price: High to Low</DropdownMenuItem>
-                <DropdownMenuItem>Best Rating</DropdownMenuItem>
-                <DropdownMenuItem>Best Match</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <span className="text-foreground/70 hidden md:inline-block">Showing 24 outfits</span>
+    <div className="min-h-screen bg-obsidian">
+      {/* Sticky Filter Bar */}
+      <div className="sticky top-[64px] z-50 bg-obsidian-2/80 backdrop-blur-xl border-b border-border py-12 px-16 md:px-48">
+        <div className="max-w-[1440px] mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-16 overflow-x-auto scrollbar-hide">
+            <span className="text-label text-ivory-3 whitespace-nowrap">24 outfits for you</span>
+            <div className="flex gap-8">
+              {['All', 'Wedding', 'Casual', 'Formal', 'Party', 'Under ₹2000'].map(f => (
+                <button 
+                  key={f} 
+                  className={cn(
+                    "h-32 px-12 rounded-pill text-[10px] uppercase font-bold tracking-wider border transition-standard",
+                    f === 'All' ? "bg-gold text-obsidian border-gold" : "border-border text-ivory-3 hover:border-gold/30"
+                  )}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 -mb-2">
-            <Badge variant="secondary" className="cursor-pointer">Occasion: Wedding <Trash2 className="ml-2 h-3 w-3" /></Badge>
-            <Badge variant="secondary" className="cursor-pointer">Color: Gold <Trash2 className="ml-2 h-3 w-3" /></Badge>
-            <Button variant="ghost" size="sm">Clear All</Button>
+          <div className="hidden lg:flex items-center gap-12">
+            <Button variant="outline" size="sm" className="h-32">
+              <SlidersHorizontal size={14} className="mr-8" /> Sort
+            </Button>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-8">
-        <div className="col-span-12 lg:col-span-9">
-          <div className="columns-1 md:columns-2 xl:columns-3 gap-8 space-y-8">
-            {outfits.map((outfit) => (
-              <Card key={outfit.id} className="group/card break-inside-avoid overflow-hidden border-border hover:border-primary transition-all duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:glow-gold">
-                <CardContent className="p-0">
-                  <div className="relative">
-                    <Link href={`/product/${outfit.id}`} passHref>
-                      <Image
-                        src={outfit.image}
-                        alt={outfit.name}
-                        width={600}
-                        height={outfit.size === 'lg' ? 900 : 750}
-                        className="w-full h-auto object-cover cursor-pointer"
-                        data-ai-hint="fashion editorial"
-                      />
-                    </Link>
-                     <div className="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                       <Button size="icon" variant="secondary" className="h-9 w-9 rounded-full bg-background/50 hover:bg-background/80"><Heart className="h-4 w-4" /></Button>
-                     </div>
+      <div className="max-w-[1440px] mx-auto py-48 px-16 md:px-48">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-24 lg:gap-32">
+          {MOCK_RESULTS.map((product) => (
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -8 }}
+              className="group cursor-pointer"
+              onClick={() => setSelectedProduct(product)}
+            >
+              <Card variant="interactive" className="h-full overflow-hidden border-none bg-obsidian-2 relative">
+                {/* Image */}
+                <div className="aspect-[3/4] overflow-hidden relative">
+                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-standard group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-obsidian/80 via-transparent to-transparent opacity-60" />
+                  
+                  {/* Action Buttons */}
+                  <div className="absolute top-12 right-12 flex flex-col gap-8 opacity-0 group-hover:opacity-100 transition-standard translate-y-4 group-hover:translate-y-0">
+                    <Button 
+                      variant="icon" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWishlist(product);
+                      }}
+                      className={cn(
+                        "w-40 h-40 bg-obsidian-2/80 backdrop-blur-md border border-gold/20",
+                        isInWishlist(product.id) && "text-gold"
+                      )}
+                    >
+                      <Heart size={18} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
+                    </Button>
+                    <Button 
+                      variant="icon" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(product);
+                      }}
+                      className={cn(
+                        "w-40 h-40 bg-obsidian-2/80 backdrop-blur-md border border-gold/20",
+                        isInCart(product.id) && "text-gold"
+                      )}
+                    >
+                      <ShoppingBag size={18} fill={isInCart(product.id) ? "currentColor" : "none"} />
+                    </Button>
                   </div>
-                  <div className="p-4 space-y-3">
-                    <Link href={`/product/${outfit.id}`} passHref>
-                      <h3 className="font-headline text-2xl text-primary cursor-pointer hover:underline">{outfit.name}</h3>
-                    </Link>
-                    <p className="text-sm text-foreground/70 italic">"{outfit.aiReason}"</p>
-                    <div className="flex items-center justify-between">
-                       <Badge variant="outline">{outfit.platform}</Badge>
-                       <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 text-primary" fill="currentColor" />
-                          <span className="font-bold">{outfit.rating}</span>
-                          <span className="text-xs text-foreground/60">({outfit.reviews})</span>
-                       </div>
-                    </div>
-                    <div className="pt-2 flex items-end justify-between">
-                      <p className="text-3xl font-bold text-primary">{outfit.price}</p>
-                      <Button variant="default">View Deal</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
 
-          <Separator className="my-16" />
-          <h2 className="text-4xl font-headline text-center mb-12">Complete The Look</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-              <Card className="text-center">
-                <CardContent className="p-4">
-                  <Image src="https://picsum.photos/seed/top1/300/400" alt="Top" width={300} height={400} className="rounded-md mx-auto" data-ai-hint="fashion blouse"/>
-                  <h4 className="font-headline mt-4">Embroidered Silk Blouse</h4>
-                  <p className="font-bold text-primary">₹2,499</p>
-                </CardContent>
-              </Card>
-              <div className="text-4xl text-center font-headline text-primary hidden md:flex items-center justify-center">+</div>
-              <Card className="text-center">
-                <CardContent className="p-4">
-                  <Image src="https://picsum.photos/seed/bottom1/300/400" alt="Bottom" width={300} height={400} className="rounded-md mx-auto" data-ai-hint="fashion skirt"/>
-                  <h4 className="font-headline mt-4">Flowing Georgette Skirt</h4>
-                  <p className="font-bold text-primary">₹3,199</p>
-                </CardContent>
-              </Card>
-          </div>
-          <div className="flex justify-center my-6">
-              <div className="text-4xl text-center font-headline text-primary">+</div>
-          </div>
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-               <Card className="text-center md:col-start-2">
-                 <CardContent className="p-4">
-                    <Image src="https://picsum.photos/seed/shoes1/300/400" alt="Footwear" width={300} height={400} className="rounded-md mx-auto" data-ai-hint="fashion shoes"/>
-                    <h4 className="font-headline mt-4">Golden Jutti Heels</h4>
-                    <p className="font-bold text-primary">₹1,599</p>
-                 </CardContent>
-               </Card>
-          </div>
-          <div className="text-center mt-8">
-              <p className="text-lg">Total Price: <span className="font-bold text-2xl text-primary">₹7,297</span></p>
-              <Button className="mt-4 font-headline text-lg">Shop All 3 Pieces</Button>
-          </div>
+                  {/* Why Tag */}
+                  {product.aiReason && (
+                    <div className="absolute bottom-12 left-12 right-12">
+                      <div className="bg-gold/90 backdrop-blur-md px-12 py-4 rounded-pill flex items-center gap-8">
+                        <Sparkles size={12} className="text-obsidian" />
+                        <span className="text-[10px] font-bold text-obsidian uppercase truncate">{product.aiReason}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
-          <Separator className="my-16" />
-          <h2 className="text-4xl font-headline text-center mb-12">Price Comparison</h2>
-          <Card>
-            <CardContent className="p-4 md:p-6">
-              <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-                  <Image src="https://picsum.photos/seed/compare1/100/150" alt="Item" width={100} height={150} className="rounded-md" data-ai-hint="fashion blouse"/>
-                  <div>
-                    <h3 className="font-headline text-2xl">Embroidered Silk Blouse</h3>
-                    <p className="text-foreground/70">Same style, different stores.</p>
+                {/* Details */}
+                <div className="p-16 space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <p className="text-label text-gold truncate">{product.brand}</p>
+                      <h3 className="text-body font-medium text-ivory truncate">{product.name}</h3>
+                    </div>
+                    <Badge variant="outline" className="text-[10px]">{product.platform}</Badge>
                   </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-h3 text-gold">₹{product.price.toLocaleString('en-IN')}</p>
+                    <div className="flex items-center gap-4 text-ivory-3">
+                      <Star size={12} className="text-gold fill-gold" />
+                      <span className="text-caption font-bold">{product.rating}</span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Product Detail Drawer */}
+      <Sheet open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
+        <SheetContent side="right" className="w-full sm:max-w-[480px] bg-obsidian-2 border-l border-gold/10 p-0 overflow-y-auto scrollbar-hide">
+          {selectedProduct && (
+            <div className="relative pb-96">
+              <SheetHeader className="absolute top-12 left-12 z-10">
+                <SheetTitle className="sr-only">{selectedProduct.name}</SheetTitle>
+              </SheetHeader>
+              
+              <div className="aspect-square bg-obsidian-3 relative">
+                <img src={selectedProduct.imageUrl} className="w-full h-full object-cover" alt={selectedProduct.name} />
+                <button onClick={() => setSelectedProduct(null)} className="absolute top-16 right-16 w-40 h-40 rounded-full bg-obsidian/50 backdrop-blur-md flex items-center justify-center text-ivory hover:bg-gold hover:text-obsidian transition-standard">
+                  <X size={20} />
+                </button>
               </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Store</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow className="border-primary/50 border-2">
-                    <TableCell className="font-medium flex items-center gap-2">
-                        <Image src="https://img.icons8.com/color/48/amazon.png" alt="Amazon" width={24} height={24}/> Amazon
-                        <Badge variant="default" className="ml-auto">Best Deal</Badge>
-                    </TableCell>
-                    <TableCell>₹2,350</TableCell>
-                    <TableCell className="text-right"><Button size="sm">Go to Store</Button></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium flex items-center gap-2">
-                        <Image src="https://img.icons8.com/fluency/48/flipkart.png" alt="Flipkart" width={24} height={24}/> Flipkart
-                    </TableCell>
-                    <TableCell>₹2,499</TableCell>
-                    <TableCell className="text-right"><Button size="sm" variant="outline">Go to Store</Button></TableCell>
-                  </TableRow>
-                  <TableRow>
-                      <TableCell className="font-medium flex items-center gap-2">
-                        <Image src="https://img.icons8.com/color/48/myntra.png" alt="Myntra" width={24} height={24}/> Myntra
-                    </TableCell>
-                    <TableCell>₹2,499</TableCell>
-                    <TableCell className="text-right"><Button size="sm" variant="outline">Go to Store</Button></TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
 
-        <aside className="col-span-12 lg:col-span-3 lg:sticky top-24 self-start">
-           <Card className="bg-card/50">
-              <CardContent className="p-4">
-                <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
-                  <AccordionItem value="item-1">
-                    <AccordionTrigger className="font-headline text-xl">Why These Outfits?</AccordionTrigger>
-                    <AccordionContent className="space-y-4 pt-2">
-                      <div>
-                        <h4 className="font-semibold">Body Shape: Pear</h4>
-                        <p className="text-sm text-foreground/70">We prioritized A-line cuts and detailed necklines to draw attention upwards and balance your proportions.</p>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold">Skin Tone: Warm</h4>
-                        <p className="text-sm text-foreground/70">Colors like ochre, deep reds, and ivory were chosen to complement your warm undertones.</p>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-2">
-                     <AccordionTrigger className="font-headline text-xl">Color Palette</AccordionTrigger>
-                     <AccordionContent>
-                       <div className="grid grid-cols-3 gap-2 pt-2">
-                         <div className="w-full aspect-square rounded-md bg-[#C9A84C]"></div>
-                         <div className="w-full aspect-square rounded-md bg-[#C4545A]"></div>
-                         <div className="w-full aspect-square rounded-md bg-[#F5F0E8]"></div>
-                         <div className="w-full aspect-square rounded-md bg-[#A67A5B]"></div>
-                         <div className="w-full aspect-square rounded-md bg-[#3D3D3D]"></div>
-                         <div className="w-full aspect-square rounded-md bg-[#8B0000]"></div>
-                       </div>
-                     </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              </CardContent>
-           </Card>
-        </aside>
-      </div>
+              <div className="p-32 space-y-32">
+                <div className="space-y-8">
+                  <Badge variant="secondary" className="bg-gold/10 text-gold border-none">{selectedProduct.brand}</Badge>
+                  <h2 className="text-h2 leading-tight">{selectedProduct.name}</h2>
+                  <div className="flex items-center gap-12">
+                    <p className="text-h1 text-gold">₹{selectedProduct.price.toLocaleString('en-IN')}</p>
+                    {selectedProduct.originalPrice && (
+                      <p className="text-h3 text-ivory-3 line-through">₹{selectedProduct.originalPrice.toLocaleString('en-IN')}</p>
+                    )}
+                    {selectedProduct.discount && (
+                      <Badge variant="destructive" className="bg-rose/20 text-rose border-none">{selectedProduct.discount}% OFF</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* AI Insight */}
+                <div className="p-24 rounded-card bg-gold/5 border-l-4 border-gold space-y-12">
+                  <div className="flex items-center gap-8 text-gold">
+                    <Sparkles size={16} />
+                    <span className="text-label">Atelier Intelligence</span>
+                  </div>
+                  <p className="text-body italic text-ivory-2">"{selectedProduct.aiReason}"</p>
+                </div>
+
+                <div className="space-y-12">
+                  <p className="text-label text-gold">Size Availability</p>
+                  <div className="flex gap-8">
+                    {['S', 'M', 'L', 'XL', 'XXL'].map(s => (
+                      <button key={s} className="w-48 h-48 rounded-button border border-border text-ivory-2 hover:border-gold hover:text-gold transition-standard font-bold text-xs">{s}</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-16 pt-16">
+                  <Button size="lg" className="w-full h-56 text-lg font-headline tracking-widest" asChild>
+                    <a href={selectedProduct.link} target="_blank">Buy on {selectedProduct.platform}</a>
+                  </Button>
+                  <div className="grid grid-cols-2 gap-12">
+                    <Button variant="outline" size="lg" className="h-56" onClick={() => toggleWishlist(selectedProduct)}>
+                      <Heart size={20} className={cn("mr-8", isInWishlist(selectedProduct.id) && "text-gold fill-gold")} /> 
+                      {isInWishlist(selectedProduct.id) ? 'Saved' : 'Wishlist'}
+                    </Button>
+                    <Button variant="outline" size="lg" className="h-56" onClick={() => addToCart(selectedProduct)}>
+                      <ShoppingBag size={20} className={cn("mr-8", isInCart(selectedProduct.id) && "text-gold fill-gold")} />
+                      {isInCart(selectedProduct.id) ? 'In Plan' : 'Add to Plan'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
-};
-
-export default ResultsPage;
+}

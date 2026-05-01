@@ -1,380 +1,195 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Camera, Check, Upload, User, Ruler, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Badge } from '@/components/ui/badge';
+import { Camera, ArrowRight, ArrowLeft, Check, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
-import { useToast } from '@/hooks/use-toast';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import * as THREE from 'three';
+
+const STEPS = [
+  { id: 'occasions', title: 'What occasions do you dress for?', subtitle: 'We\'ll tailor our suggestions to your lifestyle.' },
+  { id: 'budget', title: 'What\'s your usual budget?', subtitle: 'We track prices across Amazon, Flipkart, and Meesho.' },
+  { id: 'vibe', title: 'Pick your style vibe', subtitle: 'Choose the aesthetic that resonates with you.' },
+  { id: 'details', title: 'A few final details', subtitle: 'This helps our AI map your geometry.' },
+  { id: 'photo', title: 'Show us you', subtitle: 'One photo is all we need to define your silhouette.' },
+];
 
 export default function OnboardingPage() {
-  const [step, setStep] = useState(1);
-  const [direction, setDirection] = useState(0);
+  const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
-    fullName: '',
-    age: '',
-    gender: '',
-    height: 165,
-    heightUnit: 'cm' as 'cm' | 'ft',
-    bodySize: 'M',
     occasions: [] as string[],
     budget: [2000, 8000],
-    colors: [] as string[],
-    brands: [] as string[],
-    photo: null as string | null,
-    measurements: {
-      chest: '',
-      waist: '',
-      hips: '',
-    }
+    vibe: '',
+    height: 165,
+    size: 'M',
+    photo: null as string | null
   });
-
-  const totalSteps = 4;
   const router = useRouter();
-  const { toast } = useToast();
 
-  const paginate = (newDirection: number) => {
-    setDirection(newDirection);
-    setStep((prev) => prev + newDirection);
+  const handleNext = () => {
+    if (step < STEPS.length - 1) setStep(step + 1);
+    else router.push('/analyze');
   };
 
-  const updateFormData = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleBack = () => {
+    if (step > 0) setStep(step - 1);
   };
 
-  const handleFinish = () => {
-    toast({
-      title: "Profile Curated",
-      description: "Our AI is now ready to analyze your style.",
-    });
-    router.push('/analyze');
+  const updateData = (key: string, val: any) => {
+    setFormData(prev => ({ ...prev, [key]: val }));
   };
 
   return (
-    <div className="bg-background text-foreground min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden pt-20">
-      <ProgressBar currentStep={step} totalSteps={totalSteps} />
+    <div className="min-h-screen pt-[120px] pb-96 px-24">
+      <div className="max-w-xl mx-auto w-full">
+        {/* Progress */}
+        <div className="flex gap-8 mb-48 justify-center">
+          {STEPS.map((_, i) => (
+            <div 
+              key={i} 
+              className={cn(
+                "h-4 rounded-full transition-standard",
+                i === step ? "w-32 bg-gold" : "w-8 bg-obsidian-3",
+                i < step && "bg-gold/40"
+              )} 
+            />
+          ))}
+        </div>
 
-      <div className="w-full max-w-3xl mt-12 mb-32">
-        <AnimatePresence initial={false} custom={direction} mode="wait">
+        <AnimatePresence mode="wait">
           <motion.div
             key={step}
-            custom={direction}
-            initial={{ x: direction > 0 ? 300 : -300, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: direction < 0 ? 300 : -300, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-32 text-center"
           >
-            {step === 1 && <StepPersonalDetails formData={formData} updateFormData={updateFormData} />}
-            {step === 2 && <StepMeasurements formData={formData} updateFormData={updateFormData} />}
-            {step === 3 && <StepStylePreferences formData={formData} updateFormData={updateFormData} />}
-            {step === 4 && <StepPhotoUpload formData={formData} updateFormData={updateFormData} />}
+            <div className="space-y-8">
+              <h1 className="text-h1 text-gold">{STEPS[step].title}</h1>
+              <p className="text-body-large text-ivory-3">{STEPS[step].subtitle}</p>
+            </div>
+
+            <div className="py-24">
+              {step === 0 && (
+                <div className="flex flex-wrap gap-12 justify-center">
+                  {['Wedding', 'Office', 'Date Night', 'Festive', 'Gym', 'Casual', 'Travel'].map(occ => (
+                    <button
+                      key={occ}
+                      onClick={() => {
+                        const next = formData.occasions.includes(occ) 
+                          ? formData.occasions.filter(o => o !== occ)
+                          : [...formData.occasions, occ];
+                        updateData('occasions', next);
+                      }}
+                      className={cn(
+                        "h-48 px-24 rounded-pill border transition-standard text-sm uppercase tracking-widest font-bold",
+                        formData.occasions.includes(occ) ? "bg-gold text-obsidian border-gold" : "border-border text-ivory-3 hover:border-gold/30"
+                      )}
+                    >
+                      {occ}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {step === 1 && (
+                <div className="space-y-24">
+                  <div className="flex justify-between text-h3 font-normal">
+                    <span>₹{formData.budget[0]}</span>
+                    <span>₹{formData.budget[1]}+</span>
+                  </div>
+                  <Slider 
+                    min={500} 
+                    max={20000} 
+                    step={500} 
+                    value={formData.budget} 
+                    onValueChange={(v) => updateData('budget', v)}
+                    className="py-12"
+                  />
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="grid grid-cols-2 gap-16">
+                  {['Minimalist', 'Ethnic Fusion', 'Bohemian', 'Contemporary'].map(v => (
+                    <button
+                      key={v}
+                      onClick={() => updateData('vibe', v)}
+                      className={cn(
+                        "p-24 rounded-card border transition-standard text-left group",
+                        formData.vibe === v ? "bg-gold/10 border-gold shadow-gold" : "bg-obsidian-2 border-border"
+                      )}
+                    >
+                      <div className="w-full aspect-[4/5] bg-obsidian-3 rounded-card mb-12 overflow-hidden">
+                        <img src={`https://picsum.photos/seed/${v}/300/400`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-standard" alt={v} />
+                      </div>
+                      <p className={cn("text-label", formData.vibe === v ? "text-gold" : "text-ivory-2")}>{v}</p>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className="space-y-24 text-left">
+                  <Input label="Height (cm)" type="number" defaultValue={formData.height} onChange={e => updateData('height', e.target.value)} />
+                  <div className="space-y-8">
+                    <p className="text-label text-gold">Body Size</p>
+                    <div className="flex gap-8">
+                      {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => (
+                        <button
+                          key={s}
+                          onClick={() => updateData('size', s)}
+                          className={cn(
+                            "flex-1 h-48 rounded-button border font-bold transition-standard",
+                            formData.size === s ? "bg-gold text-obsidian border-gold" : "border-border hover:border-gold/30"
+                          )}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {step === 4 && (
+                <div className="space-y-24">
+                  <div className="w-full aspect-square rounded-card border-2 border-dashed border-gold/30 bg-gold/5 flex flex-col items-center justify-center cursor-pointer hover:bg-gold/10 transition-standard group">
+                    <div className="p-24 rounded-full bg-gold/20 mb-12 group-hover:scale-110 transition-standard">
+                      <Camera size={32} className="text-gold" />
+                    </div>
+                    <p className="text-h3 text-gold">Upload your photo</p>
+                    <p className="text-caption text-ivory-3 mt-4">Full body, natural lighting works best</p>
+                  </div>
+                  <div className="flex items-center justify-center gap-8 text-caption text-ivory-3">
+                    <span className="flex items-center gap-4"><Check size={12} className="text-success" /> Encrypted</span>
+                    <span className="flex items-center gap-4"><Check size={12} className="text-success" /> Private</span>
+                    <span className="flex items-center gap-4"><Check size={12} className="text-success" /> Ephemeral</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </motion.div>
         </AnimatePresence>
-      </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-8 flex justify-between items-center bg-gradient-to-t from-background via-background/90 to-transparent">
-        <Button variant="ghost" onClick={() => step > 1 && paginate(-1)} disabled={step === 1} className="font-headline text-xl">
-          <ArrowLeft className="mr-2" /> Back
-        </Button>
-        
-        {step < totalSteps ? (
-          <Button onClick={() => paginate(1)} className="font-headline text-xl px-12 h-14 bg-primary text-primary-foreground hover:glow-gold">
-            Continue <ArrowRight className="ml-2" />
-          </Button>
-        ) : (
-          <Button onClick={handleFinish} disabled={!formData.photo} className="font-headline text-xl px-12 h-14 bg-primary text-primary-foreground hover:glow-gold">
-            Analyze My Style <ArrowRight className="ml-2" />
-          </Button>
-        )}
+        {/* Actions */}
+        <div className="fixed bottom-48 left-0 right-0 flex justify-center">
+          <div className="max-w-xl w-full flex gap-12 px-24">
+            {step > 0 && (
+              <Button variant="outline" size="lg" onClick={handleBack} className="flex-1">
+                <ArrowLeft className="mr-8 w-16 h-16" /> Back
+              </Button>
+            )}
+            <Button size="lg" onClick={handleNext} className="flex-[2] group">
+              {step === STEPS.length - 1 ? 'Start Analysis' : 'Continue'} 
+              <ArrowRight className="ml-8 w-16 h-16 group-hover:translate-x-4 transition-standard" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
-
-const ProgressBar = ({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) => (
-  <div className="fixed top-12 left-0 right-0 flex justify-center z-50 px-8">
-    <div className="w-full max-w-2xl">
-      <div className="h-[2px] w-full bg-border relative rounded-full overflow-hidden mb-4">
-        <motion.div
-          className="absolute left-0 top-0 h-full bg-primary shadow-gold-glow"
-          initial={{ width: '0%' }}
-          animate={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
-          transition={{ duration: 0.8 }}
-        />
-      </div>
-      <div className="flex justify-between px-1">
-        {[1, 2, 3, 4].map(s => (
-          <motion.div
-            key={s}
-            animate={{
-              scale: currentStep === s ? 1.4 : 1,
-              backgroundColor: currentStep >= s ? 'hsl(var(--primary))' : 'hsl(var(--border))'
-            }}
-            className="w-2 h-2 rounded-full"
-          />
-        ))}
-      </div>
-    </div>
-  </div>
-);
-
-const StepPersonalDetails = ({ formData, updateFormData }: any) => (
-  <div className="space-y-12">
-    <div className="text-center space-y-4">
-      <h2 className="text-5xl md:text-6xl font-headline text-primary">Let's Know You</h2>
-      <p className="text-foreground/60 text-lg">Curating your identity is the first step toward perfect styling.</p>
-    </div>
-    
-    <div className="space-y-8 max-w-md mx-auto">
-      <div className="space-y-3">
-        <Label className="text-xl font-headline tracking-wide">Full Name</Label>
-        <Input 
-          value={formData.fullName} 
-          onChange={(e) => updateFormData('fullName', e.target.value)} 
-          placeholder="Enter your name" 
-          className="h-14 bg-card/50 border-primary/10 focus:border-primary text-lg"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-8">
-        <div className="space-y-3">
-          <Label className="text-xl font-headline">Age</Label>
-          <Select value={formData.age} onValueChange={(v) => updateFormData('age', v)}>
-            <SelectTrigger className="h-14 bg-card/50 border-primary/10">
-              <SelectValue placeholder="Select" />
-            </SelectTrigger>
-            <SelectContent>
-              {['18-24', '25-34', '35-44', '45-54', '55+'].map(age => (
-                <SelectItem key={age} value={age}>{age}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-3">
-          <Label className="text-xl font-headline">Gender</Label>
-          <div className="flex gap-2">
-            {['Male', 'Female'].map(g => (
-              <button
-                key={g}
-                onClick={() => updateFormData('gender', g)}
-                className={cn(
-                  "flex-1 h-14 rounded-md border transition-all text-xs uppercase tracking-widest",
-                  formData.gender === g ? "bg-primary text-primary-foreground border-primary" : "bg-card/30 border-primary/10"
-                )}
-              >
-                {g}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const StepMeasurements = ({ formData, updateFormData }: any) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-
-    // Simple 3D Body Representation (Abstract)
-    const torsoGeo = new THREE.CapsuleGeometry(0.8, 2, 16, 32);
-    const torsoMat = new THREE.MeshStandardMaterial({ 
-      color: 0xC9A84C, 
-      wireframe: true, 
-      transparent: true, 
-      opacity: 0.4 
-    });
-    const torso = new THREE.Mesh(torsoGeo, torsoMat);
-    scene.add(torso);
-
-    const light = new THREE.PointLight(0xffffff, 1);
-    light.position.set(5, 5, 5);
-    scene.add(light);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-
-    camera.position.z = 5;
-
-    const animate = () => {
-      torso.rotation.y += 0.01;
-      // Adjust scale based on size selection
-      const sizeScale = formData.bodySize === 'XS' ? 0.8 : formData.bodySize === 'XXL' ? 1.4 : 1.1;
-      torso.scale.lerp(new THREE.Vector3(sizeScale, 1, sizeScale), 0.1);
-      renderer.render(scene, camera);
-      requestAnimationFrame(animate);
-    };
-    animate();
-
-    return () => {
-      renderer.dispose();
-      scene.clear();
-    };
-  }, [formData.bodySize]);
-
-  return (
-    <div className="space-y-12">
-      <div className="text-center space-y-4">
-        <h2 className="text-5xl md:text-6xl font-headline text-primary">Your Geometry</h2>
-        <p className="text-foreground/60 text-lg">Precise measurements for an editorial fit.</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        <div className="bg-card/20 rounded-2xl border border-primary/10 p-8 h-[400px] flex items-center justify-center relative">
-          <canvas ref={canvasRef} className="w-full h-full" />
-          <div className="absolute bottom-8 left-8 bg-background/50 backdrop-blur px-4 py-2 rounded-full border border-primary/20 text-xs tracking-widest text-primary">
-            3D SILHOUETTE PREVIEW
-          </div>
-        </div>
-
-        <div className="space-y-12">
-          <div className="space-y-6">
-            <Label className="text-2xl font-headline">Height ({formData.height} cm)</Label>
-            <Slider 
-              min={140} max={210} step={1} 
-              value={[formData.height]} 
-              onValueChange={([v]) => updateFormData('height', v)}
-            />
-          </div>
-
-          <div className="space-y-6">
-            <Label className="text-2xl font-headline">Size Selection</Label>
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-              {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(size => (
-                <button
-                  key={size}
-                  onClick={() => updateFormData('bodySize', size)}
-                  className={cn(
-                    "h-16 rounded-xl border-2 transition-all font-headline text-xl",
-                    formData.bodySize === size ? "border-primary bg-primary/10 text-primary shadow-gold-glow" : "border-primary/10 bg-card/30 hover:border-primary/40"
-                  )}
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const StepStylePreferences = ({ formData, updateFormData }: any) => {
-  const toggleItem = (list: string, item: string) => {
-    const current = formData[list] as string[];
-    const next = current.includes(item) ? current.filter(i => i !== item) : [...current, item];
-    updateFormData(list, next);
-  };
-
-  return (
-    <div className="space-y-12">
-      <div className="text-center space-y-4">
-        <h2 className="text-5xl md:text-6xl font-headline text-primary">Your Vibe</h2>
-        <p className="text-foreground/60 text-lg">What aesthetic speaks to your personality?</p>
-      </div>
-
-      <div className="space-y-12 max-w-2xl mx-auto">
-        <div className="space-y-6">
-          <Label className="text-2xl font-headline">Favorite Colors</Label>
-          <div className="grid grid-cols-8 gap-4">
-            {['#000', '#FFF', '#C9A84C', '#C4545A', '#1A2A6C', '#3D3D3D', '#F5F0E8', '#8B0000'].map(c => (
-              <button
-                key={c}
-                onClick={() => toggleItem('colors', c)}
-                className={cn(
-                  "w-full aspect-square rounded-full border-2 transition-all relative",
-                  formData.colors.includes(c) ? "border-primary scale-125 shadow-lg" : "border-transparent"
-                )}
-                style={{ backgroundColor: c }}
-              >
-                {formData.colors.includes(c) && <Check className="w-3 h-3 text-white absolute inset-0 m-auto" />}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-8">
-            <div className="flex justify-between items-end">
-                <Label className="text-2xl font-headline">Budget (₹{formData.budget[0]} - ₹{formData.budget[1]})</Label>
-            </div>
-            <Slider 
-              min={500} max={20000} step={500} 
-              value={formData.budget} 
-              onValueChange={(v) => updateFormData('budget', v)}
-            />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const StepPhotoUpload = ({ formData, updateFormData }: any) => {
-  const fileRef = useRef<HTMLInputElement>(null);
-  return (
-    <div className="space-y-12">
-      <div className="text-center space-y-4">
-        <h2 className="text-5xl md:text-6xl font-headline text-primary">Show Us You</h2>
-        <p className="text-foreground/60 text-lg">A visual reference allows our AI to map your unique silhouette.</p>
-      </div>
-
-      <div className="max-w-xl mx-auto">
-        <div 
-          onClick={() => fileRef.current?.click()}
-          className="relative h-[450px] rounded-2xl border-2 border-dashed border-primary/20 bg-card/20 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-all group overflow-hidden"
-        >
-          {formData.photo ? (
-            <div className="absolute inset-0 p-4">
-                <img src={formData.photo} alt="Upload" className="w-full h-full object-cover rounded-xl border-4 border-primary" />
-            </div>
-          ) : (
-            <>
-              <div className="p-8 rounded-full bg-primary/10 mb-6 group-hover:scale-110 transition-transform">
-                <Upload className="w-12 h-12 text-primary" />
-              </div>
-              <h3 className="font-headline text-3xl mb-2">Upload or Take Photo</h3>
-              <p className="text-foreground/40 text-sm">Drag & drop or click to open gallery</p>
-            </>
-          )}
-          <input 
-            type="file" 
-            ref={fileRef} 
-            className="hidden" 
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onloadend = () => updateFormData('photo', reader.result as string);
-                reader.readAsDataURL(file);
-              }
-            }}
-          />
-        </div>
-
-        <div className="mt-12 grid grid-cols-2 gap-4">
-          {[
-            "Stand straight naturally", "Full body visibility",
-            "Natural front lighting", "Plain background best"
-          ].map((g, i) => (
-            <div key={i} className="flex items-center gap-3 text-sm text-foreground/60">
-              <Check className="w-4 h-4 text-primary" /> {g}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
