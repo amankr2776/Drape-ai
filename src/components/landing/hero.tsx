@@ -4,10 +4,11 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { DrapeHeroCanvas } from './drape-hero-canvas';
+import { ArrowRight } from 'lucide-react';
 
 /**
  * @fileOverview Refined hero section for DRAPE AI.
- * Now featuring the DrapeHeroCanvas - high-fidelity activetheory-style 3D experience.
+ * Featuring the DrapeHeroCanvas and premium interactive CTAs.
  */
 
 export default function Hero() {
@@ -64,10 +65,13 @@ export default function Hero() {
         </motion.p>
 
         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-6 justify-center pointer-events-auto">
-          <Button asChild size="lg" className="h-16 px-12 font-headline text-xl tracking-[0.2em] bg-primary text-primary-foreground hover:glow-gold transition-all duration-500">
-            <Link href="/onboarding">Analyze My Style</Link>
+          <Button asChild size="lg" className="h-[56px] px-[40px] min-w-[220px] max-w-[280px] font-body text-[14px] font-semibold tracking-[0.05em] bg-primary text-obsidian rounded-[8px] border-none shadow-none hover:bg-gold-light hover:translate-y-[-2px] hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)] transition-all duration-[250ms] group">
+            <Link href="/onboarding" className="flex items-center justify-center gap-2">
+              Analyze My Style
+              <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-[4px]" />
+            </Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="h-16 px-12 border-primary/40 text-primary font-headline text-xl tracking-[0.2em] hover:bg-primary/5 transition-all duration-500">
+          <Button asChild variant="outline" size="lg" className="h-[56px] px-[40px] min-w-[220px] max-w-[280px] font-body text-[14px] font-semibold tracking-[0.05em] text-primary border-[rgba(201,168,76,0.4)] rounded-[8px] bg-transparent hover:border-primary hover:bg-[rgba(201,168,76,0.06)] hover:translate-y-[-1px] transition-all duration-[250ms]">
             <Link href="/how-it-works">See The Process</Link>
           </Button>
         </motion.div>

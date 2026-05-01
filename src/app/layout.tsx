@@ -1,10 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
-import Header from '@/components/header';
-import Footer from '@/components/landing/footer';
 import { FirebaseClientProvider } from '@/firebase';
-import { MobileTabBar } from '@/components/mobile-tab-bar';
+import { LayoutShell } from '@/components/layout-shell';
 
 export const metadata: Metadata = {
   title: 'DRAPE AI | Luxury Personal AI Stylist',
@@ -25,12 +23,9 @@ export default function RootLayout({
       </head>
       <body className="antialiased overflow-x-hidden min-h-screen flex flex-col">
         <FirebaseClientProvider>
-          <Header />
-          <main className="flex-grow pb-[80px] lg:pb-0">
+          <LayoutShell>
             {children}
-          </main>
-          <MobileTabBar />
-          <Footer />
+          </LayoutShell>
           <Toaster />
         </FirebaseClientProvider>
       </body>
