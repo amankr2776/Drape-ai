@@ -71,7 +71,7 @@ export const DrapeHeroCanvas: React.FC = () => {
     camera.position.z = 8;
     cameraRef.current = camera;
 
-    // Environment Map
+    // Environment Map for Chrome Reflections
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
 
@@ -113,7 +113,7 @@ export const DrapeHeroCanvas: React.FC = () => {
 
     // --- HERO GEM ---
     const gem = new THREE.Group();
-    gem.scale.setScalar(0); // For intro sequence
+    gem.scale.setScalar(0);
     const gemGeo = new THREE.IcosahedronGeometry(0.9, 1);
     const gemMat = new THREE.MeshPhysicalMaterial({
       color: 0xC9A84C,
@@ -218,7 +218,10 @@ export const DrapeHeroCanvas: React.FC = () => {
         varying vec3 vColor;
         void main() {
           vColor = color;
-          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          vec3 pos = position;
+          pos.x += sin(uTime * aSpeed + aOffset) * 0.002;
+          pos.y += cos(uTime * aSpeed * 0.7 + aOffset) * 0.001;
+          vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
           gl_PointSize = aSize * (300.0 / -mvPosition.z);
           gl_Position = projectionMatrix * mvPosition;
         }
@@ -229,6 +232,7 @@ export const DrapeHeroCanvas: React.FC = () => {
           float dist = length(gl_PointCoord - vec2(0.5));
           if(dist > 0.5) discard;
           float alpha = (1.0 - (dist * 2.0)) * 0.6;
+          alpha = pow(alpha, 2.0);
           gl_FragColor = vec4(vColor, alpha);
         }
       `
@@ -298,13 +302,13 @@ export const DrapeHeroCanvas: React.FC = () => {
       isClicking.current = true;
       clickStartTime.current = clockRef.current.getElapsedTime();
       
-      // Explosion burst
+      // Explosion burst on click
       const vels = particleVelocities.current!;
       const pos = particlesRef.current!.geometry.attributes.position.array as Float32Array;
       for (let i = 0; i < pCount; i++) {
         const dx = pos[i * 3];
         const dy = pos[i * 3 + 1];
-        const dist = Math.sqrt(dx * dx + dy * dy);
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
         vels[i * 3] += (dx / dist) * 0.1;
         vels[i * 3 + 1] += (dy / dist) * 0.1;
       }
@@ -321,7 +325,11 @@ export const DrapeHeroCanvas: React.FC = () => {
     // --- ANIMATION LOOP ---
     const animate = () => {
       const t = clockRef.current.getElapsedTime();
-      const delta = clockRef.current.getDelta();
+      
+      // Update Uniforms
+      if (particlesRef.current) {
+        (particlesRef.current.material as THREE.ShaderMaterial).uniforms.uTime.value = t;
+      }
 
       // Mouse Lerp
       mouseRef.current.x += (mouseRef.current.targetX - mouseRef.current.x) * 0.05;
@@ -352,7 +360,7 @@ export const DrapeHeroCanvas: React.FC = () => {
 
       // Main Gem Loop
       if (gemGroup.current) {
-        gemGroup.current.rotation.y += 0.003 + mouseRef.current.vX * 0.1;
+        gemGroup.current.rotation.y += 0.003 + Math.abs(mouseRef.current.vX) * 0.2;
         gemGroup.current.rotation.x += 0.001;
         gemGroup.current.position.y = Math.sin(t * 0.8) * 0.1;
         
@@ -360,7 +368,7 @@ export const DrapeHeroCanvas: React.FC = () => {
         pointLight1.position.x = Math.sin(t * 0.5) * 3;
         pointLight1.position.z = Math.cos(t * 0.5) * 3;
 
-        // Click Scale
+        // Click Response
         if (isClicking.current) {
           const elapsed = t - clickStartTime.current;
           if (elapsed < 0.5) {
@@ -376,10 +384,10 @@ export const DrapeHeroCanvas: React.FC = () => {
       if (innerRing.current) innerRing.current.rotation.x += 0.008;
       if (outerRing.current) {
         outerRing.current.rotation.z += 0.005;
-        outerRing.current.rotation.x += mouseRef.current.y * 0.01;
+        outerRing.current.rotation.x += mouseRef.current.y * 0.05;
       }
 
-      // Particles Drift & Repulsion
+      // Particles Physics (CPU simulation for repulsion)
       if (particlesRef.current) {
         const pos = particlesRef.current.geometry.attributes.position.array as Float32Array;
         const vels = particleVelocities.current!;
@@ -387,32 +395,31 @@ export const DrapeHeroCanvas: React.FC = () => {
         for (let i = 0; i < pCount; i++) {
           const px = pos[i * 3];
           const py = pos[i * 3 + 1];
-          const pz = pos[i * 3 + 2];
           
           // Repulsion from mouse
           const dx = px - mouseRef.current.x * 5;
           const dy = py - mouseRef.current.y * 5;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 1.5) {
-            vels[i * 3] += (dx / dist) * 0.003;
-            vels[i * 3 + 1] += (dy / dist) * 0.003;
+            const f = 0.003;
+            vels[i * 3] += (dx / dist) * f;
+            vels[i * 3 + 1] += (dy / dist) * f;
           }
           
-          // Drift
-          pos[i * 3] += vels[i * 3] + Math.sin(t * 0.5 + i) * 0.002;
-          pos[i * 3 + 1] += vels[i * 3 + 1] + Math.cos(t * 0.3 + i) * 0.001;
-          
-          // Friction & Return
+          // Friction & Velocity update
+          pos[i * 3] += vels[i * 3];
+          pos[i * 3 + 1] += vels[i * 3 + 1];
           vels[i * 3] *= 0.95;
           vels[i * 3 + 1] *= 0.95;
           
+          // Return to origin damping
           pos[i * 3] += (origs[i * 3] - pos[i * 3]) * 0.01;
           pos[i * 3 + 1] += (origs[i * 3 + 1] - pos[i * 3 + 1]) * 0.01;
         }
         particlesRef.current.geometry.attributes.position.needsUpdate = true;
       }
 
-      // Gold Stream
+      // Gold Stream update
       if (streamParticles.current && streamCurve.current) {
         const sPos = streamParticles.current.geometry.attributes.position.array as Float32Array;
         for (let i = 0; i < streamCount; i++) {
@@ -425,17 +432,17 @@ export const DrapeHeroCanvas: React.FC = () => {
         streamParticles.current.geometry.attributes.position.needsUpdate = true;
       }
 
-      // Secondary Objects
+      // Secondary Objects animation
       secondaryObjects.current.forEach((g, i) => {
-        if (t > 4) g.visible = true;
+        if (t > 3) g.visible = true;
         const freq = 0.3 + (i * 0.1);
-        const amp = 0.004 + (i * 0.001);
+        const amp = 0.006 + (i * 0.001);
         g.position.y += Math.sin(t * freq + i) * amp;
         g.rotation.y += 0.01;
         g.rotation.x += 0.005;
       });
 
-      // Stars & Columns
+      // Stars Parallax
       if (starField.current) {
         starField.current.rotation.y += 0.0001;
         starField.current.position.x = mouseRef.current.x * 0.05;
@@ -460,10 +467,18 @@ export const DrapeHeroCanvas: React.FC = () => {
     };
     window.addEventListener('resize', handleResize);
 
+    const handleVisibilityChange = () => {
+      if (document.hidden) clockRef.current.stop();
+      else clockRef.current.start();
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('click', handleClick);
       window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      
       renderer.dispose();
       scene.traverse(obj => {
         if (obj instanceof THREE.Mesh) {
@@ -472,6 +487,9 @@ export const DrapeHeroCanvas: React.FC = () => {
           else obj.material.dispose();
         }
       });
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
     };
   }, []);
 
