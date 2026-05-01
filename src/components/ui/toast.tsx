@@ -75,7 +75,7 @@ const Toast = React.forwardRef<
       <div className="absolute bottom-0 left-0 h-[2px] w-full bg-foreground/5 overflow-hidden">
         <div 
           className={cn(
-            "h-full transition-all duration-[4000ms] ease-linear origin-left",
+            "h-full transition-all duration-4000 ease-linear origin-left",
             variant === 'success' ? "bg-green-500" : 
             variant === 'destructive' ? "bg-accent" :
             variant === 'warning' ? "bg-primary" :
@@ -107,7 +107,7 @@ const ToastAction = React.forwardRef<
     {...props}
   />
 ))
-ToastAction.displayName = ToastPrimitives.Action.displayName
+ToastAction.displayName = ToastAction.displayName
 
 const ToastClose = ToastPrimitives.Close
 

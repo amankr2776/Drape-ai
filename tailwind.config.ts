@@ -93,6 +93,19 @@ export default {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
+      transitionDuration: {
+        '2000': '2000ms',
+        '4000': '4000ms',
+      },
+      animationDuration: {
+        '2000': '2000ms', 
+        '4000': '4000ms',
+      },
+      boxShadow: {
+        'gold-glow': '0 0 10px #C9A84C',
+        'gold-glow-lg': '0 0 20px #C9A84C',
+        'gold-glow-xl': '0 0 40px #C9A84C',
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],

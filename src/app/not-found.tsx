@@ -27,7 +27,7 @@ export default function NotFound() {
             src="https://picsum.photos/seed/404-fashion/600/900" 
             alt="Lost fashion silhouette" 
             fill
-            className="object-cover transition-transform duration-[2s] group-hover:scale-110"
+            className="object-cover transition-transform duration-2000 group-hover:scale-110"
             data-ai-hint="fashion model silhouette"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />

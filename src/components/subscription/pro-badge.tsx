@@ -24,7 +24,7 @@ export function ProBadge({ className, size = 'sm' }: ProBadgeProps) {
     >
       <Badge 
         className={cn(
-          "bg-primary text-primary-foreground font-bold tracking-widest border-none shadow-[0_0_10px_theme(colors.primary)]",
+          "bg-primary text-primary-foreground font-bold tracking-widest border-none shadow-gold-glow",
           sizeClasses[size],
           "relative overflow-hidden group",
           className

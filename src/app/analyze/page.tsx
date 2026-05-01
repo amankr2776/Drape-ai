@@ -124,7 +124,7 @@ export default function AnalyzePage() {
           <AnimatePresence>
             {currentStep === 0 && (
               <motion.div
-                className="absolute top-0 left-0 w-full h-1 bg-primary shadow-[0_0_20px_theme(colors.primary)] z-20"
+                className="absolute top-0 left-0 w-full h-1 bg-primary shadow-gold-glow-lg z-20"
                 initial={{ y: -10 }}
                 animate={{ y: '1000%' }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
@@ -145,7 +145,7 @@ export default function AnalyzePage() {
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: i * 0.15 }}
                     style={{ top: pos.t, left: pos.l }}
-                    className="absolute w-3 h-3 bg-primary rounded-full shadow-[0_0_10px_theme(colors.primary)]"
+                    className="absolute w-3 h-3 bg-primary rounded-full shadow-gold-glow"
                   />
                 ))}
              </div>
@@ -168,7 +168,7 @@ export default function AnalyzePage() {
         {/* Progress Bar */}
         <div className="w-full bg-border h-1 rounded-full mb-8 overflow-hidden">
           <motion.div
-            className="bg-primary h-1 shadow-[0_0_10px_theme(colors.primary)]"
+            className="bg-primary h-1 shadow-gold-glow"
             initial={{ width: '0%' }}
             animate={{ width: `${((currentStep + 1) / analysisSteps.length) * 100}%` }}
             transition={{ duration: STEP_DURATION / 1000, ease: 'linear' }}
