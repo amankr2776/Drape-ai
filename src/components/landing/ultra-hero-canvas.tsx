@@ -52,6 +52,7 @@ export const UltraHeroCanvas: React.FC = () => {
     },
     fps: 60,
     introProgress: 0,
+    clickPulse: 0,
   });
 
   useEffect(() => {
@@ -196,6 +197,18 @@ export const UltraHeroCanvas: React.FC = () => {
           ay -= (mdy / mdist) * force;
         }
 
+        // Supernova shockwave
+        if (state.current.clickPulse > 0) {
+            const cdx = p.x - mouse.x;
+            const cdy = p.y - mouse.y;
+            const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
+            const wavePos = (1 - state.current.clickPulse) * width;
+            if (Math.abs(cdist - wavePos) < 100) {
+                ax += (cdx / cdist) * 20;
+                ay += (cdy / cdist) * 20;
+            }
+        }
+
         // Scroll Choreography
         if (scroll > 0.15) {
           const sForce = (scroll - 0.15) * 5;
@@ -246,6 +259,10 @@ export const UltraHeroCanvas: React.FC = () => {
         if (particles[idx] > width) particles[idx] = 0;
         if (particles[idx+1] < 0) particles[idx+1] = height;
         if (particles[idx+1] > height) particles[idx+1] = 0;
+      }
+
+      if (state.current.clickPulse > 0) {
+        state.current.clickPulse -= 0.02;
       }
     };
 
@@ -321,7 +338,7 @@ export const UltraHeroCanvas: React.FC = () => {
           const p3 = pts[idx + CLOTH_COLS + 2];
           const p4 = pts[idx + CLOTH_COLS + 1];
 
-          // Fake Iridescent Shader logic
+          // Iridescent shading approximation
           const dist = Math.abs(p1.y - p1.ry);
           const sheen = Math.min(1, dist / 40);
           ctx.fillStyle = sheen > 0.5 ? pal.primary : pal.secondary;
@@ -399,6 +416,10 @@ export const UltraHeroCanvas: React.FC = () => {
       m.y = e.clientY;
     };
 
+    const handleClick = () => {
+        state.current.clickPulse = 1.0;
+    };
+
     const handleScroll = () => {
       state.current.scroll = Math.min(1, window.scrollY / window.innerHeight);
     };
@@ -408,6 +429,7 @@ export const UltraHeroCanvas: React.FC = () => {
     };
 
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('click', handleClick);
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('resize', handleResize);
 
@@ -419,6 +441,7 @@ export const UltraHeroCanvas: React.FC = () => {
       cancelAnimationFrame(animId);
       clearInterval(simInterval);
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('click', handleClick);
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
     };
