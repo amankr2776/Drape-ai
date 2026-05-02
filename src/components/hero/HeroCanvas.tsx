@@ -416,10 +416,6 @@ export default function HeroCanvas() {
           style={{ zIndex: i + 1, pointerEvents: i === 1 ? 'auto' : 'none' }}
         />
       ))}
-      <style jsx global>{`
-        body { cursor: none !important; }
-        .page-content { cursor: auto; }
-      `}</style>
     </div>
   );
 }
