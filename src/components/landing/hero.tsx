@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 /**
  * @fileOverview Refined hero section for DRAPE AI.
@@ -11,6 +12,8 @@ import { ArrowRight } from 'lucide-react';
  */
 
 export default function Hero() {
+  const { isAuthenticated } = useAuth();
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -62,7 +65,7 @@ export default function Hero() {
 
         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-6 justify-center pointer-events-auto">
           <Button asChild size="lg" className="h-[56px] px-[40px] min-w-[220px] max-w-[280px] font-body text-[14px] font-semibold tracking-[0.05em] bg-primary text-obsidian rounded-[8px] border-none shadow-none hover:bg-gold-light hover:translate-y-[-2px] hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)] transition-all duration-[250ms] group">
-            <Link href="/onboarding" className="flex items-center justify-center gap-2">
+            <Link href={isAuthenticated ? "/analyze" : "/login?redirect=/analyze"} className="flex items-center justify-center gap-2">
               Analyze My Style
               <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-[4px]" />
             </Link>
