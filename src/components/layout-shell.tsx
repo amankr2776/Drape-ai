@@ -6,25 +6,39 @@ import Footer from '@/components/landing/footer';
 import { MobileTabBar } from '@/components/mobile-tab-bar';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
+import { CustomCursor } from '@/components/custom-cursor';
+import { AppLoader } from '@/components/app-loader';
+import { CookieBanner } from '@/components/legal/cookie-banner';
+import { ChatWidget } from '@/components/chat-widget';
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isLanding = pathname === '/';
+  const isOnboarding = pathname === '/onboarding';
 
-  // Global scroll body locking logic could be integrated here if needed
   useEffect(() => {
-    // Reset overflow on navigation
     document.body.style.overflow = '';
   }, [pathname]);
 
   return (
-    <>
-      {!isLanding && <Header />}
-      <main className={cn(isLanding ? "min-h-screen" : "page-content")}>
+    <div className="flex flex-col min-h-screen">
+      <AppLoader />
+      <CustomCursor />
+      
+      {!isLanding && !isOnboarding && <Header />}
+      
+      <main className={cn(
+        "flex-grow",
+        !isLanding && !isOnboarding && "page-wrapper"
+      )}>
         {children}
       </main>
-      {!isLanding && <MobileTabBar />}
-      {!isLanding && <Footer />}
-    </>
+
+      {!isLanding && !isOnboarding && <MobileTabBar />}
+      {!isLanding && !isOnboarding && <Footer />}
+      
+      <CookieBanner />
+      <ChatWidget />
+    </div>
   );
 }

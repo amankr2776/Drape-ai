@@ -10,11 +10,11 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
 const STEPS = [
-  { id: 'occasions', title: 'What occasions do you dress for?', subtitle: 'We\'ll tailor our suggestions to your lifestyle.' },
-  { id: 'budget', title: 'What\'s your usual budget?', subtitle: 'We track prices across Amazon, Flipkart, and Meesho.' },
-  { id: 'vibe', title: 'Pick your style vibe', subtitle: 'Choose the aesthetic that resonates with you.' },
-  { id: 'details', title: 'A few final details', subtitle: 'This helps our AI map your geometry.' },
-  { id: 'photo', title: 'Show us you', subtitle: 'One photo is all we need to define your silhouette.' },
+  { id: 'occasions', title: 'Life Events', subtitle: 'What occasions do you dress for?' },
+  { id: 'budget', title: 'Market Tier', subtitle: 'What is your usual budget range?' },
+  { id: 'vibe', title: 'Aesthetic Vibe', subtitle: 'Pick your style resonation' },
+  { id: 'details', title: 'Physique Geometry', subtitle: 'This helps our AI map your silhouette' },
+  { id: 'photo', title: 'Visual DNA', subtitle: 'One photo defines your geometry' },
 ];
 
 export default function OnboardingPage() {
@@ -43,36 +43,26 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Onboarding Progress Bar (Fixed at top) */}
+    <div className="fixed inset-0 bg-background overflow-hidden flex flex-col">
+      {/* Fixed Progress Bar */}
       <div 
         className="fixed top-0 left-0 right-0 h-1 bg-border" 
-        style={{ zIndex: 'var(--z-sticky-bar)' }}
+        style={{ zIndex: 'var(--z-navbar)' }}
       >
         <motion.div 
-          className="h-full bg-gold"
+          className="h-full bg-gold shadow-gold-glow"
           initial={{ width: 0 }}
           animate={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
           transition={{ duration: 0.5 }}
         />
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col items-center justify-center px-16 md:px-24 pt-24 pb-32">
-        <div className="w-full max-w-xl">
-          {/* Progress Dots */}
-          <div className="flex gap-[6px] mb-48 justify-center items-center">
-            {STEPS.map((_, i) => (
-              <motion.div 
-                key={i} 
-                initial={false}
-                animate={{ 
-                  width: i === step ? 24 : 6,
-                  backgroundColor: i === step ? '#C9A84C' : i < step ? 'rgba(201,168,76,0.6)' : 'rgba(201,168,76,0.25)'
-                }}
-                className="h-[6px] rounded-full transition-all duration-300" 
-              />
-            ))}
+      {/* Main Content Area - Centered & Fixed */}
+      <div className="flex-1 flex flex-col items-center justify-center p-24 md:p-48">
+        <div className="w-full max-w-[560px] relative">
+          {/* Background Step Number */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[160px] font-headline text-primary opacity-[0.03] select-none pointer-events-none z-0">
+            0{step + 1}
           </div>
 
           <AnimatePresence mode="wait">
@@ -81,18 +71,18 @@ export default function OnboardingPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              className="space-y-32 text-center"
+              transition={{ duration: 0.4 }}
+              className="space-y-48 text-center relative z-10"
             >
-              <div className="space-y-8">
-                <h1 className="text-h1 text-gold">{STEPS[step].title}</h1>
-                <p className="text-body-large text-ivory-3">{STEPS[step].subtitle}</p>
+              <div className="space-y-12">
+                <h1 className="text-h1 text-gold leading-tight">{STEPS[step].title}</h1>
+                <p className="text-lg text-ivory-3">{STEPS[step].subtitle}</p>
               </div>
 
               <div className="py-24">
                 {step === 0 && (
                   <div className="flex flex-wrap gap-12 justify-center max-w-[640px] mx-auto">
-                    {['Wedding', 'Office', 'Date Night', 'Festive', 'Gym', 'Casual', 'Travel'].map(occ => (
+                    {['Wedding', 'Office', 'Date Night', 'Festive', 'Casual', 'Travel'].map(occ => (
                       <button
                         key={occ}
                         onClick={() => {
@@ -102,11 +92,10 @@ export default function OnboardingPage() {
                           updateData('occasions', next);
                         }}
                         className={cn(
-                          "h-[48px] px-28 rounded-[100px] border text-[13px] font-body tracking-[0.04em] transition-all duration-200 active:scale-[0.97] appearance-none outline-none cursor-pointer",
+                          "h-[48px] px-24 rounded-pill border text-[12px] font-bold tracking-widest transition-all uppercase",
                           formData.occasions.includes(occ) 
-                            ? "bg-[rgba(201,168,76,0.15)] border-gold text-gold font-semibold shadow-[0_0_12px_rgba(201,168,76,0.15)_inset]" 
-                            : "bg-[rgba(201,168,76,0.04)] border-[rgba(201,168,76,0.2)] text-ivory-2 hover:border-[rgba(201,168,76,0.45)] hover:bg-[rgba(201,168,76,0.08)] hover:text-ivory hover:translate-y-[-1px]",
-                          !formData.occasions.includes(occ) && "font-medium"
+                            ? "bg-gold/10 border-gold text-gold" 
+                            : "bg-white/5 border-white/10 text-ivory-4 hover:border-white/30"
                         )}
                       >
                         {occ}
@@ -116,8 +105,8 @@ export default function OnboardingPage() {
                 )}
 
                 {step === 1 && (
-                  <div className="space-y-24">
-                    <div className="flex justify-between text-h3 font-normal text-gold">
+                  <div className="space-y-32">
+                    <div className="flex justify-between text-h3 text-gold">
                       <span>₹{formData.budget[0]}</span>
                       <span>₹{formData.budget[1]}+</span>
                     </div>
@@ -127,7 +116,7 @@ export default function OnboardingPage() {
                       step={500} 
                       value={formData.budget} 
                       onValueChange={(v) => updateData('budget', v)}
-                      className="py-12"
+                      className="py-16"
                     />
                   </div>
                 )}
@@ -139,35 +128,35 @@ export default function OnboardingPage() {
                         key={v}
                         onClick={() => updateData('vibe', v)}
                         className={cn(
-                          "p-24 rounded-card border transition-all duration-300 text-left group active:scale-[0.97] appearance-none outline-none cursor-pointer",
-                          formData.vibe === v ? "bg-gold/10 border-gold shadow-gold" : "bg-obsidian-2 border-border"
+                          "p-16 rounded-card border transition-all text-left",
+                          formData.vibe === v ? "bg-gold/10 border-gold" : "bg-white/5 border-white/10"
                         )}
                       >
-                        <div className="w-full aspect-[4/5] bg-obsidian-3 rounded-card mb-12 overflow-hidden">
-                          <img src={`https://picsum.photos/seed/${v}/300/400`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" alt={v} />
+                        <div className="aspect-[4/5] bg-obsidian-3 rounded-md mb-12 overflow-hidden">
+                          <img src={`https://picsum.photos/seed/${v}/300/400`} className="w-full h-full object-cover grayscale opacity-40" alt={v} />
                         </div>
-                        <p className={cn("text-label", formData.vibe === v ? "text-gold" : "text-ivory-2")}>{v}</p>
+                        <p className={cn("text-[10px] uppercase font-bold tracking-widest", formData.vibe === v ? "text-gold" : "text-ivory-4")}>{v}</p>
                       </button>
                     ))}
                   </div>
                 )}
 
                 {step === 3 && (
-                  <div className="space-y-24 text-left">
-                    <div className="space-y-2">
-                        <label className="text-label text-gold">Height (cm)</label>
-                        <Input type="number" defaultValue={formData.height} onChange={e => updateData('height', (e.target as HTMLInputElement).value)} />
+                  <div className="space-y-32 text-left">
+                    <div className="space-y-4">
+                        <label className="text-[10px] uppercase tracking-widest font-bold text-gold">Height (cm)</label>
+                        <Input type="number" defaultValue={formData.height} className="h-14 bg-white/5 border-white/10" onChange={e => updateData('height', e.target.value)} />
                     </div>
                     <div className="space-y-8">
-                      <p className="text-label text-gold">Body Size</p>
+                      <p className="text-[10px] uppercase tracking-widest font-bold text-gold">Body Size</p>
                       <div className="flex gap-8">
-                        {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => (
+                        {['S', 'M', 'L', 'XL'].map(s => (
                           <button
                             key={s}
                             onClick={() => updateData('size', s)}
                             className={cn(
-                              "flex-1 h-48 rounded-[8px] border font-semibold transition-all duration-200 active:scale-[0.97] appearance-none outline-none cursor-pointer",
-                              formData.size === s ? "bg-gold text-obsidian border-gold" : "border-border text-ivory-2 hover:border-gold/30 hover:bg-gold/5"
+                              "flex-1 h-14 rounded border font-bold transition-all",
+                              formData.size === s ? "bg-gold text-obsidian border-gold" : "border-white/10 text-ivory-4 hover:border-white/30"
                             )}
                           >
                             {s}
@@ -179,18 +168,17 @@ export default function OnboardingPage() {
                 )}
 
                 {step === 4 && (
-                  <div className="space-y-24">
-                    <div className="w-full aspect-square rounded-card border-2 border-dashed border-gold/30 bg-gold/5 flex flex-col items-center justify-center cursor-pointer hover:bg-gold/10 transition-all group">
-                      <div className="p-24 rounded-full bg-gold/20 mb-12 group-hover:scale-110 transition-all">
-                        <Camera size={32} className="text-gold" />
+                  <div className="space-y-32">
+                    <div className="w-full aspect-square rounded-card border-2 border-dashed border-white/10 bg-white/5 flex flex-col items-center justify-center cursor-pointer hover:border-gold/30 transition-all">
+                      <div className="p-24 rounded-full bg-gold/10 mb-16">
+                        <Camera size={40} className="text-gold" />
                       </div>
-                      <p className="text-h3 text-gold">Upload your photo</p>
-                      <p className="text-caption text-ivory-3 mt-4">Full body, natural lighting works best</p>
+                      <p className="text-h3 text-gold">Upload Portrait</p>
+                      <p className="text-sm text-ivory-4 mt-8">Full body, neutral background</p>
                     </div>
-                    <div className="flex items-center justify-center gap-8 text-caption text-ivory-3">
-                      <span className="flex items-center gap-4"><Check size={12} className="text-success" /> Encrypted</span>
-                      <span className="flex items-center gap-4"><Check size={12} className="text-success" /> Private</span>
-                      <span className="flex items-center gap-4"><Check size={12} className="text-success" /> Ephemeral</span>
+                    <div className="flex items-center justify-center gap-16 text-[10px] uppercase font-bold text-ivory-4 tracking-widest">
+                      <span className="flex items-center gap-4"><Check size={12} className="text-gold" /> Encrypted</span>
+                      <span className="flex items-center gap-4"><Check size={12} className="text-gold" /> Private</span>
                     </div>
                   </div>
                 )}
@@ -200,38 +188,27 @@ export default function OnboardingPage() {
         </div>
       </div>
 
-      {/* Bottom Navigation Bar */}
+      {/* Navigation Controls */}
       <div 
-        className="fixed bottom-0 left-0 right-0 bg-obsidian border-t border-border px-16 md:px-24 py-16 flex items-center justify-center"
-        style={{ zIndex: 'var(--z-navbar)', paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
+        className="fixed bottom-0 left-0 right-0 p-24 md:p-32 flex justify-between items-center bg-gradient-to-t from-background via-background to-transparent"
+        style={{ zIndex: 'var(--z-navbar)' }}
       >
-        <div className="w-full max-w-xl flex items-center justify-between gap-12">
-          {step > 0 ? (
-            <>
-              <Button 
-                variant="secondary" 
-                onClick={handleBack} 
-                className="flex-1 sm:flex-none h-12 px-8 min-w-[120px]"
-              >
-                <ArrowLeft className="mr-2 w-4 h-4" /> Back
-              </Button>
-              <Button 
-                onClick={handleNext} 
-                className="flex-1 sm:min-w-[200px] sm:max-w-[260px] h-12 group"
-              >
-                {step === STEPS.length - 1 ? 'Start Analysis' : 'Continue'} 
-                <ArrowRight className="ml-2 w-4 h-4 transition-transform duration-200 group-hover:translate-x-[4px]" />
-              </Button>
-            </>
-          ) : (
-            <Button 
-              onClick={handleNext} 
-              className="w-full sm:w-auto sm:min-w-[240px] sm:max-w-[260px] h-12 mx-auto group"
-            >
-              Continue
-              <ArrowRight className="ml-2 w-4 h-4 transition-transform duration-200 group-hover:translate-x-[4px]" />
-            </Button>
-          )}
+        <div className="max-w-[560px] mx-auto w-full flex justify-between gap-16">
+          <Button 
+            variant="outline" 
+            onClick={handleBack} 
+            disabled={step === 0}
+            className={cn("h-14 px-32 flex-1 sm:flex-none uppercase tracking-widest text-[10px] font-bold border-white/10", step === 0 && "opacity-0 pointer-events-none")}
+          >
+            <ArrowLeft className="mr-8 w-4 h-4" /> Back
+          </Button>
+          <Button 
+            onClick={handleNext} 
+            className="h-14 px-48 flex-1 sm:flex-none uppercase tracking-widest text-[10px] font-bold shadow-gold"
+          >
+            {step === STEPS.length - 1 ? 'Begin Analysis' : 'Continue'} 
+            <ArrowRight className="ml-8 w-4 h-4" />
+          </Button>
         </div>
       </div>
     </div>

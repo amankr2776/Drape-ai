@@ -12,7 +12,6 @@ import {
   Search, 
   Heart, 
   ShoppingBag, 
-  Bell, 
   UserCircle,
   Scissors
 } from 'lucide-react';
@@ -43,13 +42,13 @@ export default function Header() {
     <header
       className={cn(
         'fixed top-0 left-0 right-0 transition-all duration-300 h-[64px] flex items-center px-16 md:px-24',
-        isScrolled ? 'bg-obsidian/80 backdrop-blur-xl border-b border-border shadow-medium' : 'bg-transparent'
+        isScrolled ? 'bg-obsidian/80 backdrop-blur-xl border-b border-border' : 'bg-transparent'
       )}
       style={{ zIndex: 'var(--z-navbar)' }}
     >
-      <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between">
+      <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between h-full">
         {/* Left Section: Logo */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 flex items-center">
           <Link href="/" className="flex items-center gap-2 group">
             <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
               <Scissors size={18} className="text-gold" strokeWidth={1.5} />
@@ -59,8 +58,8 @@ export default function Header() {
         </div>
 
         {/* Center Section: Nav Links (Desktop) */}
-        <nav className="hidden lg:flex items-center justify-center flex-1 px-8">
-          <div className="flex items-center gap-[40px]">
+        <nav className="hidden lg:flex items-center justify-center flex-1 px-8 h-full">
+          <div className="flex items-center gap-32">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -83,51 +82,41 @@ export default function Header() {
         </nav>
 
         {/* Right Section: Action Icons */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <div className="hidden sm:flex items-center gap-2">
-            <div className="icon-button-wrapper">
-              <Link href="/discover" className="p-2 text-ivory-3 hover:text-gold transition-colors" aria-label="Search">
-                <Search size={22} strokeWidth={1.5} />
-              </Link>
-            </div>
+        <div className="flex items-center gap-8 flex-shrink-0 h-full">
+          <div className="hidden sm:flex items-center gap-4 h-full">
+            <Link href="/discover" className="p-8 text-ivory-3 hover:text-gold transition-colors" aria-label="Search">
+              <Search size={20} strokeWidth={1.5} />
+            </Link>
             
-            <div className="icon-button-wrapper">
-              <NotificationBell />
-            </div>
+            <NotificationBell />
 
-            <div className="icon-button-wrapper">
-              <Link href="/wishlist" className="p-2 text-ivory-3 hover:text-gold transition-colors" aria-label="Wishlist">
-                <Heart size={22} strokeWidth={1.5} fill={wishlist.length > 0 ? "rgba(201,168,76,0.2)" : "none"} />
-                {wishlist.length > 0 && (
-                  <span className="badge-standard flex items-center justify-center w-[18px] h-[18px] bg-gold text-obsidian text-[10px] font-bold rounded-full border-2 border-obsidian">
-                    {wishlist.length > 9 ? '9+' : wishlist.length}
-                  </span>
-                )}
-              </Link>
-            </div>
+            <Link href="/wishlist" className="p-8 text-ivory-3 hover:text-gold transition-colors relative" aria-label="Wishlist">
+              <Heart size={20} strokeWidth={1.5} fill={wishlist.length > 0 ? "rgba(201,168,76,0.2)" : "none"} />
+              {wishlist.length > 0 && (
+                <span className="absolute -top-1 -right-1 flex items-center justify-center w-[16px] h-[16px] bg-gold text-obsidian text-[9px] font-bold rounded-full border border-obsidian">
+                  {wishlist.length > 9 ? '9+' : wishlist.length}
+                </span>
+              )}
+            </Link>
 
-            <div className="icon-button-wrapper">
-              <Link href="/cart" className="p-2 text-ivory-3 hover:text-gold transition-colors" aria-label="Shopping Plan">
-                <ShoppingBag size={22} strokeWidth={1.5} />
-                {cart.length > 0 && (
-                  <span className="badge-standard flex items-center justify-center w-[18px] h-[18px] bg-gold text-obsidian text-[10px] font-bold rounded-full border-2 border-obsidian">
-                    {cart.length > 9 ? '9+' : cart.length}
-                  </span>
-                )}
-              </Link>
-            </div>
-          </div>
-
-          <div className="icon-button-wrapper ml-1">
-            <Link href="/dashboard/profile" className="p-2 text-ivory-3 hover:text-gold transition-colors" aria-label="Profile">
-              <UserCircle size={22} strokeWidth={1.5} />
+            <Link href="/cart" className="p-8 text-ivory-3 hover:text-gold transition-colors relative" aria-label="Shopping Plan">
+              <ShoppingBag size={20} strokeWidth={1.5} />
+              {cart.length > 0 && (
+                <span className="absolute -top-1 -right-1 flex items-center justify-center w-[16px] h-[16px] bg-gold text-obsidian text-[9px] font-bold rounded-full border border-obsidian">
+                  {cart.length > 9 ? '9+' : cart.length}
+                </span>
+              )}
             </Link>
           </div>
+
+          <Link href="/dashboard/profile" className="p-8 text-ivory-3 hover:text-gold transition-colors" aria-label="Profile">
+            <UserCircle size={20} strokeWidth={1.5} />
+          </Link>
           
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden ml-2 text-ivory-3 hover:text-gold"
+            className="lg:hidden text-ivory-3 hover:text-gold p-0 h-10 w-10"
             onClick={() => setIsMobileMenuOpen(true)}
             aria-label="Open Menu"
           >
