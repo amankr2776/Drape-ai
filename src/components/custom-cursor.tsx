@@ -8,11 +8,9 @@ export const CustomCursor = () => {
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
 
-  // Define spring configurations at the top level
   const innerSpringConfig = { damping: 25, stiffness: 200 };
   const outerSpringConfig = { damping: 40, stiffness: 150 };
 
-  // Initialize springs as hooks at the top level
   const cursorXSpring = useSpring(cursorX, innerSpringConfig);
   const cursorYSpring = useSpring(cursorY, innerSpringConfig);
   const cursorXOuterSpring = useSpring(cursorX, outerSpringConfig);
@@ -36,24 +34,24 @@ export const CustomCursor = () => {
 
   return (
     <>
-      {/* Main Cursor Dot */}
       <motion.div
-        className="fixed top-0 left-0 w-3 h-3 bg-primary rounded-full pointer-events-none z-[9999] mix-blend-difference"
+        className="fixed top-0 left-0 w-3 h-3 bg-primary rounded-full pointer-events-none mix-blend-difference"
         style={{
           x: cursorXSpring,
           y: cursorYSpring,
           translateX: '-50%',
           translateY: '-50%',
+          zIndex: 'var(--z-cursor)'
         }}
       />
-      {/* Outer Ring with Lag */}
       <motion.div
-        className="fixed top-0 left-0 w-8 h-8 border border-primary/50 rounded-full pointer-events-none z-[9998]"
+        className="fixed top-0 left-0 w-8 h-8 border border-primary/50 rounded-full pointer-events-none"
         style={{
           x: cursorXOuterSpring,
           y: cursorYOuterSpring,
           translateX: '-50%',
           translateY: '-50%',
+          zIndex: 'calc(var(--z-cursor) - 1)'
         }}
       />
     </>

@@ -3,7 +3,7 @@
 import { DrapeLogo } from '@/components/drape-logo';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Github, Twitter, Instagram, Linkedin, Sun, Moon } from 'lucide-react';
+import { Twitter, Instagram, Linkedin, Sun, Moon } from 'lucide-react';
 import Marquee from '@/components/ui/marquee';
 import { useState, useEffect } from 'react';
 
@@ -27,7 +27,6 @@ const Footer = () => {
 
   return (
     <footer className="bg-obsidian-2 border-t border-border mt-auto relative overflow-hidden">
-      {/* Social Proof Strip */}
       <div className="bg-gold/5 border-b border-border py-6 overflow-hidden">
         <Marquee pauseOnHover className="[--duration:60s]">
           {[
@@ -48,7 +47,7 @@ const Footer = () => {
           <div className="md:col-span-2 space-y-8 flex flex-col items-center md:items-start text-center md:text-left">
             <DrapeLogo className="scale-110" />
             <p className="text-sm text-foreground/60 max-w-sm leading-relaxed">
-              DRAPE AI is India's premier intelligent fashion styling platform. We map the geometry of your silhouette to the soul of your style.
+              DRAPE AI is India{"'"}s premier intelligent fashion styling platform. We map the geometry of your silhouette to the soul of your style.
             </p>
             <div className="flex gap-4">
               <Button variant="outline" size="icon" className="h-12 w-12 border-primary/20 rounded-xl" onClick={toggleTheme}>
@@ -77,10 +76,10 @@ const Footer = () => {
           </div>
 
           <div className="flex flex-col gap-6">
-            <h4 className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Legal & Security</h4>
+            <h4 className="text-xs font-bold uppercase tracking-[0.3em] text-primary">Legal {'&'} Security</h4>
             <nav className="flex flex-col gap-4 text-sm text-foreground/40">
               <Link href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link href="/terms" className="hover:text-primary transition-colors">Terms & Conditions</Link>
+              <Link href="/terms" className="hover:text-primary transition-colors">Terms {'&'} Conditions</Link>
               <Link href="/cookies" className="hover:text-primary transition-colors">Cookie Policy</Link>
               <Link href="/disclaimer" className="hover:text-primary transition-colors">Legal Disclaimer</Link>
               <Link href="/refund-policy" className="hover:text-primary transition-colors">Refund Policy</Link>

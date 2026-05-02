@@ -7,9 +7,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { ShieldCheck, ArrowRight, Info } from 'lucide-react';
+import Link from 'next/link';
 
 const CURRENT_POLICY_VERSION = '1.0';
 
@@ -55,7 +55,7 @@ export function MandatoryPrivacyGate() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-[var(--z-modal)] bg-obsidian flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-obsidian flex items-center justify-center p-4 overflow-y-auto" style={{ zIndex: 'var(--z-modal)' }}>
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -100,7 +100,7 @@ export function MandatoryPrivacyGate() {
                 onCheckedChange={(v) => setConsents({...consents, terms: !!v})}
               />
               <Label htmlFor="terms" className="text-xs leading-tight text-ivory-3">
-                I agree to the <span className="text-gold underline cursor-pointer">Terms & Conditions</span>
+                I agree to the <Link href="/terms" target="_blank" className="text-gold underline">Terms {'&'} Conditions</Link>
               </Label>
             </div>
             <div className="flex items-start space-x-3">
@@ -110,7 +110,7 @@ export function MandatoryPrivacyGate() {
                 onCheckedChange={(v) => setConsents({...consents, privacy: !!v})}
               />
               <Label htmlFor="privacy" className="text-xs leading-tight text-ivory-3">
-                I agree to the <span className="text-gold underline cursor-pointer">Privacy Policy</span>
+                I agree to the <Link href="/privacy-policy" target="_blank" className="text-gold underline">Privacy Policy</Link>
               </Label>
             </div>
             <div className="flex items-start space-x-3">
@@ -155,7 +155,7 @@ export function MandatoryPrivacyGate() {
 
           <div className="flex items-center justify-between pb-4">
             <div className="space-y-0.5">
-              <Label className="text-xs text-ivory-2">Style & Price Notifications</Label>
+              <Label className="text-xs text-ivory-2">Style {'&'} Price Notifications</Label>
               <p className="text-[10px] text-ivory-4">Get alerts when your favorites drop in price.</p>
             </div>
             <Switch 

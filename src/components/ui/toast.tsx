@@ -16,7 +16,7 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitives.Viewport
     ref={ref}
     className={cn(
-      "fixed top-[80px] left-1/2 -translate-x-1/2 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:flex-col md:max-w-[420px]",
+      "fixed top-[80px] left-1/2 -translate-x-1/2 flex max-h-screen w-full flex-col-reverse p-4 sm:flex-col md:max-w-[420px]",
       className
     )}
     style={{ zIndex: 'var(--z-toast)' }}
@@ -72,7 +72,6 @@ const Toast = React.forwardRef<
         <X className="h-4 w-4" />
       </ToastPrimitives.Close>
 
-      {/* Progress Bar Countdown */}
       <div className="absolute bottom-0 left-0 h-[2px] w-full bg-foreground/5 overflow-hidden">
         <div 
           className={cn(
