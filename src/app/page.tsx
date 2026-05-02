@@ -5,10 +5,13 @@ import Hero from '@/components/landing/hero';
 import Features from '@/components/landing/features';
 import HowItWorks from '@/components/landing/how-it-works';
 import SocialProof from '@/components/landing/social-proof';
+import HeroCanvas from '@/components/hero/HeroCanvas';
 
 export default function Home() {
   return (
     <div className="overflow-x-hidden relative bg-background">
+      <HeroCanvas />
+      
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
