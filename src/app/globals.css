@@ -49,6 +49,25 @@
     --s-96: 96px;
     --s-128: 128px;
   }
+
+  [data-theme="light"] {
+    --background: 45 40% 98%;
+    --foreground: 24 20% 10%;
+    --card: 45 30% 95%;
+    --card-foreground: 24 20% 10%;
+    --popover: 45 40% 98%;
+    --popover-foreground: 24 20% 10%;
+    --primary: 42 61% 44%;
+    --primary-foreground: 45 40% 98%;
+    --secondary: 45 20% 90%;
+    --secondary-foreground: 24 20% 10%;
+    --muted: 45 10% 85%;
+    --muted-foreground: 24 10% 40%;
+    --accent: 357 58% 45%;
+    --accent-foreground: 45 40% 98%;
+    --border: 42 40% 85%;
+    --input: 42 40% 85%;
+  }
 }
 
 @layer base {
@@ -70,7 +89,7 @@
 
 @layer utilities {
   .page-wrapper {
-    @apply relative min-h-screen bg-obsidian pt-[64px] pb-[80px] lg:pb-0;
+    @apply relative min-h-screen bg-background pt-[64px] pb-[80px] lg:pb-0;
   }
   .page-content {
     @apply max-w-[1280px] mx-auto px-16 md:px-24;
@@ -140,4 +159,13 @@
 
 body[data-scroll-locked="true"] {
   overflow: hidden !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
