@@ -1,4 +1,3 @@
-
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
@@ -150,7 +149,7 @@ export default function WishlistPage() {
             </motion.div>
             <div className="space-y-8">
               <h2 className="text-h2">Your wishlist is empty</h2>
-              <p className="text-body-large text-ivory-3 max-w-sm">Heart any outfit during your discovery to save it here for later. We'll track prices and notify you of drops.</p>
+              <p className="text-body-large text-ivory-3 max-w-sm">Heart any outfit during your discovery to save it here for later. We{"'"}ll track prices and notify you of drops.</p>
             </div>
             <Button size="lg" asChild className="mt-16 h-14 px-32 font-headline tracking-widest shadow-gold">
               <Link href="/discover">Start Discovering <ArrowRight className="ml-8" /></Link>

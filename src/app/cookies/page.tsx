@@ -80,14 +80,14 @@ export default function CookiePolicyPage() {
       <section id="consent" className="scroll-mt-32 mt-12">
         <h2 className="text-3xl font-headline text-gold mb-6">4. Consent Mechanism</h2>
         <p className="text-foreground/70">
-          On your first visit, a consent banner appears. We do not set any non-essential cookies until you click "Accept All" or configure them in "Manage Preferences". Strictly necessary cookies are set by default as they are essential for service performance.
+          On your first visit, a consent banner appears. We do not set any non-essential cookies until you click {'"'}Accept All{'"'} or configure them in {'"'}Manage Preferences{'"'}. Strictly necessary cookies are set by default as they are essential for service performance.
         </p>
       </section>
 
       <section id="withdraw" className="scroll-mt-32 mt-12">
         <h2 className="text-3xl font-headline text-gold mb-6">5. Withdrawing Consent</h2>
         <p className="text-foreground/70">
-          You can withdraw consent anytime in your Settings > Privacy panel. This will immediately delete non-essential cookies from your browser.
+          You can withdraw consent anytime in your Settings {'>'} Privacy panel. This will immediately delete non-essential cookies from your browser.
         </p>
       </section>
     </LegalPageLayout>

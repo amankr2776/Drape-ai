@@ -44,7 +44,7 @@ export default function NotFound() {
           Lost in the Wardrobe
         </h1>
         <p className="text-lg text-foreground/60 font-body max-w-md mx-auto mb-10 leading-relaxed">
-          Oops! It seems the aesthetic you seek has been misplaced amongst the silks and satins. Let's return to the collection.
+          Oops! It seems the aesthetic you seek has been misplaced amongst the silks and satins. Let{"'"}s return to the collection.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

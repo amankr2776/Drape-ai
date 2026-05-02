@@ -66,17 +66,17 @@ export default function AboutPage() {
           <div className="space-y-6">
             <h2 className="text-[10px] uppercase tracking-[0.5em] text-primary font-bold">Our Mission</h2>
             <blockquote className="text-4xl md:text-6xl font-headline italic text-foreground/80 leading-snug border-l-4 border-primary pl-8">
-              "Fashion shouldn't require a stylist. It should understand you."
+              {'"'}Fashion shouldn{"'"}t require a stylist. It should understand you.{'"'}
             </blockquote>
           </div>
           <div className="space-y-6 text-lg text-foreground/60 leading-relaxed font-body">
             <p>
-              At DRAPE AI, we’re bridging the gap between high-fashion editorial logic and accessible technology. 
+              At DRAPE AI, we{"'"}re bridging the gap between high-fashion editorial logic and accessible technology. 
               Our platform was born from the belief that styling is a science of proportions and a poetry of color.
             </p>
             <p>
               By leveraging advanced computer vision, we map the unique geometry of your silhouette, 
-              ensuring that every recommendation feels bespoke. We don't just find clothes; we find your aesthetic soul.
+              ensuring that every recommendation feels bespoke. We don{"'"}t just find clothes; we find your aesthetic soul.
             </p>
             <p>
               For any questions, reach us at <a href="mailto:drapeai78000@gmail.com" style={{color:'#C9A84C'}}>drapeai78000@gmail.com</a>.
@@ -133,7 +133,7 @@ export default function AboutPage() {
                     <h3 className="text-2xl font-headline text-primary">{member.name}</h3>
                     <p className="text-[10px] uppercase tracking-widest text-foreground/40 mt-1">{member.role}</p>
                   </div>
-                  <p className="text-sm text-foreground/60 italic">"{member.bio}"</p>
+                  <p className="text-sm text-foreground/60 italic">{'"'}{member.bio}{'"'}</p>
                   <Linkedin className="w-5 h-5 text-foreground/20 group-hover:text-primary transition-colors" />
                 </Card>
                 {/* Back */}

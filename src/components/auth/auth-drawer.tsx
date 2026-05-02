@@ -206,7 +206,7 @@ export function AuthDrawer({ children }: { children: React.ReactNode }) {
                   <p className="text-foreground/60">Welcome to DRAPE AI, {formData.fullName.split(' ')[0]}!</p>
                 </div>
                 <Button className="w-full h-14 font-headline text-xl" onClick={() => router.push('/onboarding')}>
-                  Let's build your style profile →
+                  Let{"'"}s build your style profile {'->'}
                 </Button>
               </motion.div>
             )}
@@ -224,7 +224,7 @@ export function AuthDrawer({ children }: { children: React.ReactNode }) {
                 </button>
                 <div className="space-y-2">
                   <h2 className="text-4xl font-headline text-primary">Reset Password</h2>
-                  <p className="text-sm text-foreground/60">Enter your email and we'll send you a link to reset your password.</p>
+                  <p className="text-sm text-foreground/60">Enter your email and we{"'"}ll send you a link to reset your password.</p>
                 </div>
                 <form onSubmit={handleForgotPassword} className="space-y-6">
                   <div className="space-y-2">
@@ -418,7 +418,7 @@ export function AuthDrawer({ children }: { children: React.ReactNode }) {
                               onCheckedChange={(v) => setFormData({...formData, agreeTerms: !!v})}
                             />
                             <Label htmlFor="terms" className="text-[10px] leading-tight text-foreground/60 cursor-pointer">
-                              I have read and agree to the <Link href="/privacy-policy" target="_blank" className="text-primary hover:underline">Privacy Policy</Link> and <Link href="/terms" target="_blank" className="text-primary hover:underline">Terms & Conditions</Link>
+                              I have read and agree to the <Link href="/privacy-policy" target="_blank" className="text-primary hover:underline">Privacy Policy</Link> and <Link href="/terms" target="_blank" className="text-primary hover:underline">Terms {'&'} Conditions</Link>
                             </Label>
                           </div>
 

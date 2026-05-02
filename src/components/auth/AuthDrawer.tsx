@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -141,7 +140,7 @@ export function AuthDrawer({ children }: { children: React.ReactNode }) {
                   <div className="flex items-start gap-3">
                     <Checkbox id="terms" required />
                     <Label htmlFor="terms" className="text-[10px] leading-tight text-ivory-3 font-normal">
-                      I agree to the <Link href="/privacy-policy" className="text-gold underline">Privacy Policy</Link> and <Link href="/terms" className="text-gold underline">Terms & Conditions</Link>
+                      I agree to the <Link href="/privacy-policy" className="text-gold underline">Privacy Policy</Link> and <Link href="/terms" className="text-gold underline">Terms {'&'} Conditions</Link>
                     </Label>
                   </div>
                   <div className="flex items-start gap-3">

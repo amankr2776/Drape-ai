@@ -137,7 +137,7 @@ export default function HelpArticlePage({ params }: { params: Promise<{ id: stri
               <div className="p-8 rounded-3xl bg-primary/5 border border-primary/10 space-y-6">
                 <LifeBuoy className="w-10 h-10 text-primary/40" />
                 <p className="text-sm text-foreground/60 leading-relaxed font-body">
-                  If our documentation didn't resolve your inquiry, our human curation team is available for a direct dispatch.
+                  If our documentation {"didn't"} resolve your inquiry, our human curation team is available for a direct dispatch.
                 </p>
                 <Button asChild className="w-full h-12 bg-primary text-primary-foreground font-headline tracking-widest">
                   <Link href="/contact">Contact Support</Link>

@@ -115,7 +115,7 @@ export default function PricingPage() {
             <span className="text-primary italic">Pay Less Than A Coffee.</span>
           </h1>
           <p className="text-foreground/40 text-lg max-w-2xl mx-auto font-body">
-            Sophisticated styling doesn't have to be expensive. Upgrade when you're ready. Cancel anytime. No questions asked.
+            Sophisticated styling doesn{"'"}t have to be expensive. Upgrade when you{"'"}re ready. Cancel anytime. No questions asked.
           </p>
 
           <div className="flex items-center justify-center gap-6 pt-8">
@@ -270,7 +270,7 @@ export default function PricingPage() {
               <div className="flex justify-center gap-1">
                 {[1, 2, 3, 4, 5].map(s => <Star key={s} size={14} className="fill-primary text-primary" />)}
               </div>
-              <p className="italic text-foreground/80 font-body">"{t.text}"</p>
+              <p className="italic text-foreground/80 font-body">{'"'}{t.text}{'"'}</p>
               <div>
                 <p className="font-bold text-primary">{t.name}</p>
                 <p className="text-[10px] uppercase tracking-widest text-foreground/40">{t.city}</p>
