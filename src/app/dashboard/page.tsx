@@ -8,10 +8,10 @@ import {
   Heart, 
   Sparkles, 
   ArrowRight,
-  Crown,
-  Trophy,
-  History,
-  ShoppingBag
+  ShieldCheck,
+  CheckCircle2,
+  Clock,
+  Shirt
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,10 +25,7 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Cell
+  ResponsiveContainer 
 } from 'recharts';
 
 const PRICE_HISTORY = [
@@ -41,213 +38,180 @@ const PRICE_HISTORY = [
   { day: 'Sun', price: 3400 },
 ];
 
-const METRICS = [
-  { label: 'Outfits Saved', val: '42', trend: '+12%', icon: Heart },
-  { label: 'Analyses Used', val: '1/3', trend: 'Free Plan', icon: Zap },
-  { label: 'Price Alerts', val: '8', trend: 'Active', icon: Tag },
-  { label: 'Money Saved', val: '₹2,400', trend: 'Lifetime', icon: TrendingUp },
-];
-
-const BADGES = [
-  { name: 'First Analysis', icon: '🎯', unlocked: true },
-  { name: 'Style Starter', icon: '👗', unlocked: true },
-  { name: 'Price Hunter', icon: '💰', unlocked: true },
-  { name: 'Trendsetter', icon: '🔥', unlocked: false },
-  { name: 'Pro Member', icon: '👑', unlocked: false },
-];
-
 export default function DashboardPage() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+  };
+
   return (
-    <div className="page-wrapper bg-background">
-      <div className="page-content py-12 space-y-12">
-        {/* Greeting Header */}
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-          <div className="space-y-2">
-            <h1 className="text-h1 lg:text-[56px] text-ivory">Welcome back, Ananya 👋</h1>
-            <p className="text-lg text-foreground/40">The atelier is ready for your next transformation.</p>
-          </div>
+    <div className="page-content py-12 space-y-12">
+      {/* Greeting Header */}
+      <motion.header 
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="flex flex-col md:flex-row md:items-end justify-between gap-8"
+      >
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-5xl font-headline text-foreground">Welcome back, Ananya 👋</h1>
+          <p className="text-foreground/40 text-lg">Your curated intelligence is refreshed and ready.</p>
+        </div>
+        <div className="flex items-center gap-4 bg-white/5 border border-white/10 px-6 py-4 rounded-2xl">
           <div className="text-right">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-gold font-bold">Style Explorer Level 3</p>
-            <div className="flex items-center gap-4 mt-2">
-              <Progress value={68} className="w-48 h-2" />
-              <span className="text-xs font-bold text-ivory">340/500 XP</span>
-            </div>
+            <p className="text-[10px] uppercase tracking-widest text-primary font-bold">Style Explorer Level 3</p>
+            <p className="text-xs font-bold text-foreground">340 / 500 XP</p>
           </div>
-        </header>
-
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {METRICS.map((m, i) => (
-            <Card key={i} className="bg-obsidian-2 border-border group hover:border-gold/30 transition-all">
-              <CardContent className="p-8 space-y-4">
-                <div className="flex justify-between items-start">
-                  <div className="p-3 rounded-xl bg-gold/10 text-gold group-hover:scale-110 transition-transform">
-                    <m.icon size={24} />
-                  </div>
-                  <span className="text-[10px] font-bold text-success uppercase tracking-widest">{m.trend}</span>
-                </div>
-                <div>
-                  <h3 className="text-4xl font-headline text-gold">{m.val}</h3>
-                  <p className="text-xs text-foreground/40 uppercase tracking-widest font-bold mt-1">{m.label}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary flex items-center justify-center text-[10px] font-bold">
+            68%
+          </div>
         </div>
+      </motion.header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          {/* Main Feed */}
-          <div className="lg:col-span-8 space-y-12">
-            {/* Gamification Strip */}
-            <section className="space-y-6">
-              <h2 className="text-2xl font-headline text-gold italic border-l-4 border-gold pl-6">Atelier Achievements</h2>
-              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-                {BADGES.map((b, i) => (
-                  <div 
-                    key={i} 
-                    className={cn(
-                      "min-w-[140px] p-6 rounded-2xl bg-obsidian-2 border border-border text-center space-y-4 transition-all",
-                      !b.unlocked && "opacity-40 grayscale blur-[1px] hover:blur-0 hover:grayscale-0 hover:opacity-100"
-                    )}
-                  >
-                    <div className="text-4xl">{b.icon}</div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-ivory">{b.name}</p>
-                    {!b.unlocked && <Lock size={12} className="mx-auto text-foreground/20" />}
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Price Tracker Chart */}
-            <Card className="bg-obsidian-2 border-border overflow-hidden">
-              <CardHeader className="bg-obsidian-3/50 p-6 flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="text-xl flex items-center gap-2">
-                    <TrendingUp size={20} className="text-gold" />
-                    Market Radar (Weekly)
-                  </CardTitle>
-                  <CardDescription className="text-xs">Aggregate price tracking across your saved items.</CardDescription>
+      {/* KPI Row */}
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+      >
+        {[
+          { label: 'Outfits Saved', val: '42', trend: '+12%', icon: Heart },
+          { label: 'Analyses Used', val: '1/3', trend: 'Free Plan', icon: Zap },
+          { label: 'Price Alerts', val: '8', trend: 'Active', icon: Tag },
+          { label: 'Money Saved', val: '₹2,400', trend: 'Lifetime', icon: TrendingUp },
+        ].map((m, i) => (
+          <motion.div key={i} variants={itemVariants}>
+            <Card className="glass-card h-full p-8 space-y-4">
+              <div className="flex justify-between items-start">
+                <div className="p-3 rounded-xl bg-primary/10 text-primary">
+                  <m.icon size={20} />
                 </div>
-                <Badge variant="outline" className="border-success/20 text-success">Saved ₹2,400</Badge>
-              </CardHeader>
-              <CardContent className="p-8 h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={PRICE_HISTORY}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(201,168,76,0.05)" vertical={false} />
-                    <XAxis 
-                      dataKey="day" 
-                      stroke="rgba(245,240,232,0.2)" 
-                      fontSize={10} 
-                      tickLine={false} 
-                      axisLine={false} 
-                    />
-                    <YAxis 
-                      stroke="rgba(245,240,232,0.2)" 
-                      fontSize={10} 
-                      tickLine={false} 
-                      axisLine={false}
-                      tickFormatter={(v) => `₹${v}`}
-                    />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#0A0A0F', border: '1px solid rgba(201,168,76,0.2)', borderRadius: '8px' }}
-                      itemStyle={{ color: '#C9A84C' }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="price" 
-                      stroke="#C9A84C" 
-                      strokeWidth={3} 
-                      dot={{ r: 4, fill: '#C9A84C', strokeWidth: 0 }}
-                      activeDot={{ r: 6, shadow: '0 0 10px rgba(201,168,76,0.5)' }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
+                <Badge variant="outline" className="text-success border-success/20 text-[10px]">{m.trend}</Badge>
+              </div>
+              <div>
+                <h3 className="text-4xl font-headline text-primary">{m.val}</h3>
+                <p className="text-[10px] uppercase tracking-widest text-foreground/40 font-bold mt-1">{m.label}</p>
+              </div>
             </Card>
+          </motion.div>
+        ))}
+      </motion.div>
 
-            {/* Recommendations Teaser */}
-            <section className="space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        {/* Main Feed */}
+        <div className="lg:col-span-8 space-y-12">
+          {/* Price Tracking Visual */}
+          <Card className="glass-panel overflow-hidden">
+            <CardHeader className="p-8 border-b border-white/5">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-headline text-gold italic border-l-4 border-gold pl-6">Curated Intelligence</h2>
-                <Button asChild variant="link" className="text-gold uppercase tracking-[0.2em] text-[10px]">
-                  <Link href="/results">View All Styles →</Link>
-                </Button>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {[1, 2].map(i => (
-                  <Card key={i} className="bg-obsidian-2 border-border group overflow-hidden cursor-pointer">
-                    <div className="aspect-product relative">
-                      <img src={`https://picsum.photos/seed/dash-${i}/400/600`} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" alt="Rec" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-transparent opacity-60" />
-                      <div className="absolute bottom-6 left-6 right-6 space-y-2">
-                        <Badge className="bg-gold/90 text-obsidian font-bold">92% Match</Badge>
-                        <h4 className="text-xl font-headline text-ivory">Midnight Bloom Silk</h4>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </section>
-          </div>
-
-          {/* Sidebar */}
-          <aside className="lg:col-span-4 space-y-8">
-            {/* Daily Challenge */}
-            <Card className="bg-gold/5 border border-gold/20 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform">
-                <Trophy size={80} className="text-gold" />
-              </div>
-              <CardContent className="p-8 space-y-6">
-                <h3 className="text-xl font-headline text-gold">Daily Curation Goal</h3>
-                <p className="text-sm text-ivory-2 leading-relaxed">Save 3 outfits matching the <span className="text-gold font-bold">Monsoon Silk</span> aesthetic.</p>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-[10px] uppercase font-bold text-ivory-4">
-                    <span>Progress</span>
-                    <span>1/3 Done</span>
-                  </div>
-                  <Progress value={33} className="h-1.5" />
-                </div>
-                <Button className="w-full bg-gold text-obsidian font-headline tracking-widest text-lg">Accept Challenge</Button>
-              </CardContent>
-            </Card>
-
-            {/* Referral Program */}
-            <Card className="bg-obsidian-2 border-border overflow-hidden">
-               <CardHeader className="bg-obsidian-3/50 p-6">
-                 <CardTitle className="text-lg flex items-center gap-2"><Crown size={20} className="text-gold" /> VIP Referrals</CardTitle>
-               </CardHeader>
-               <CardContent className="p-8 space-y-6">
-                 <p className="text-xs text-foreground/60">Invite 3 friends to get <span className="text-gold font-bold">1 Month Pro</span> for free.</p>
-                 <div className="p-4 bg-obsidian-3 border border-dashed border-border rounded-lg text-center font-mono text-sm text-gold">
-                   DRAPE-ANANYA7
-                 </div>
-                 <Button variant="outline" className="w-full border-gold/20 text-gold uppercase tracking-widest text-[10px] font-bold">Copy Link</Button>
-               </CardContent>
-            </Card>
-
-            {/* History Strip */}
-            <Card className="bg-obsidian-2 border-border">
-               <CardHeader className="p-6 pb-0">
-                  <CardTitle className="text-sm uppercase tracking-widest font-bold text-foreground/40 flex items-center gap-2">
-                    <History size={14} /> Recently Explored
+                <div>
+                  <CardTitle className="text-2xl flex items-center gap-2">
+                    <TrendingUp size={24} className="text-primary" />
+                    Market Radar
                   </CardTitle>
-               </CardHeader>
-               <CardContent className="p-6 space-y-4">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="flex gap-4 items-center group cursor-pointer">
-                      <div className="w-12 h-16 rounded bg-obsidian-3 overflow-hidden border border-border group-hover:border-gold/30">
-                        <img src={`https://picsum.photos/seed/hist-${i}/100/150`} className="w-full h-full object-cover grayscale group-hover:grayscale-0" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-ivory group-hover:text-gold transition-colors">Festive Sangeet Look</p>
-                        <p className="text-[10px] text-foreground/40 uppercase">2 hours ago</p>
-                      </div>
-                    </div>
-                  ))}
-               </CardContent>
-            </Card>
-          </aside>
+                  <CardDescription>Price fluctuations across your wishlist items this week.</CardDescription>
+                </div>
+                <Badge className="bg-success/10 text-success border-none font-bold">₹2,400 SAVED</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-8 h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={PRICE_HISTORY}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                  <XAxis 
+                    dataKey="day" 
+                    stroke="rgba(255,255,255,0.2)" 
+                    fontSize={12} 
+                    tickLine={false} 
+                    axisLine={false} 
+                  />
+                  <YAxis 
+                    stroke="rgba(255,255,255,0.2)" 
+                    fontSize={12} 
+                    tickLine={false} 
+                    axisLine={false}
+                    tickFormatter={(v) => `₹${v}`}
+                  />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'rgba(10,10,15,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                    itemStyle={{ color: '#C9A84C' }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="price" 
+                    stroke="#C9A84C" 
+                    strokeWidth={3} 
+                    dot={{ r: 4, fill: '#C9A84C', strokeWidth: 0 }}
+                    activeDot={{ r: 6, shadow: '0 0 10px rgba(201,168,76,0.5)' }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity */}
+          <section className="space-y-6">
+            <h2 className="text-2xl font-headline text-foreground flex items-center gap-2">
+              <Clock size={24} className="text-primary/60" />
+              Recent Activity
+            </h2>
+            <div className="space-y-4">
+              {[
+                { type: 'analysis', msg: 'New style analysis completed for "Office Wear"', time: '2 hours ago', icon: Sparkles },
+                { type: 'price', msg: 'Price drop alert: Heritage Zari Set is 20% off', time: '5 hours ago', icon: Tag },
+                { type: 'save', msg: 'Saved "Midnight Bloom Silk" to your collection', time: 'Yesterday', icon: Heart },
+              ].map((act, i) => (
+                <div key={i} className="glass-card flex items-center gap-6 p-6 rounded-2xl">
+                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-primary/60">
+                    <act.icon size={20} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{act.msg}</p>
+                    <p className="text-[10px] uppercase tracking-widest text-foreground/30 font-bold mt-1">{act.time}</p>
+                  </div>
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link href="#"><ArrowRight size={16} /></Link>
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
+
+        {/* Sidebar */}
+        <aside className="lg:col-span-4 space-y-12">
+          {/* Pro Promotion */}
+          <Card className="bg-primary/10 border-primary/20 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:rotate-12 transition-transform">
+              <Shirt size={120} />
+            </div>
+            <CardContent className="p-8 space-y-6">
+              <Badge className="bg-primary text-obsidian font-bold">PRO ACCESS</Badge>
+              <h3 className="text-3xl font-headline leading-tight">Unlock Your Full Aesthetic Potential</h3>
+              <p className="text-sm text-foreground/60 leading-relaxed">Get unlimited analyses, real-time price monitoring, and exclusive access to the Meesho collection.</p>
+              <Button className="w-full h-14 bg-primary text-obsidian font-headline text-lg tracking-widest">Upgrade Now</Button>
+            </CardContent>
+          </Card>
+
+          {/* Quick Tips */}
+          <section className="space-y-6">
+            <h3 className="text-[10px] uppercase tracking-[0.3em] text-foreground/40 font-bold">Atelier Guidance</h3>
+            <div className="space-y-4">
+              <div className="p-6 bg-white/5 rounded-2xl border border-white/10 space-y-3">
+                <div className="flex items-center gap-2 text-primary">
+                  <ShieldCheck size={16} />
+                  <span className="text-xs font-bold uppercase tracking-widest">Privacy Tip</span>
+                </div>
+                <p className="text-xs text-foreground/60 leading-relaxed">Keep your silhouette photo up to date every 6 months for the most accurate fabric-fit mapping.</p>
+              </div>
+            </div>
+          </section>
+        </aside>
       </div>
     </div>
   );

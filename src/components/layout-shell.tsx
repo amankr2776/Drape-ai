@@ -3,9 +3,9 @@
 import { usePathname } from 'next/navigation';
 import Header from '@/components/header';
 import Footer from '@/components/landing/footer';
-import { MobileTabBar } from '@/components/mobile-tab-bar';
+import { Sidebar } from '@/components/sidebar';
 import { cn } from '@/lib/utils';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { CustomCursor } from '@/components/custom-cursor';
 import { AppLoader } from '@/components/app-loader';
 import { CookieBanner } from '@/components/legal/cookie-banner';
@@ -16,28 +16,33 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isLanding = pathname === '/';
   const isOnboarding = pathname === '/onboarding';
-
-  useEffect(() => {
-    document.body.style.overflow = '';
-  }, [pathname]);
+  const isAuthPage = pathname?.startsWith('/auth');
+  
+  const showSidebar = !isLanding && !isOnboarding && !isAuthPage;
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen bg-background text-foreground">
       <AppLoader />
       <MandatoryPrivacyGate />
       <CustomCursor />
       
-      {!isLanding && !isOnboarding && <Header />}
+      {showSidebar && <Sidebar className="hidden lg:flex w-72 fixed left-0 top-0 bottom-0 z-40 border-r border-border" />}
       
-      <main className={cn(
-        "flex-grow",
-        !isLanding && !isOnboarding && "page-wrapper"
+      <div className={cn(
+        "flex-1 flex flex-col min-h-screen transition-all duration-300",
+        showSidebar && "lg:pl-72"
       )}>
-        {children}
-      </main>
+        {!isLanding && !isOnboarding && <Header />}
+        
+        <main className={cn(
+          "flex-grow flex flex-col",
+          !isLanding && !isOnboarding && "pt-16 pb-24 lg:pb-0"
+        )}>
+          {children}
+        </main>
 
-      {!isLanding && !isOnboarding && <MobileTabBar />}
-      {!isLanding && !isOnboarding && <Footer />}
+        {!isLanding && !isOnboarding && <Footer />}
+      </div>
       
       <CookieBanner />
       <ChatWidget />
