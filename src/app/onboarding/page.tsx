@@ -206,7 +206,7 @@ export default function OnboardingPage() {
             onClick={handleNext} 
             className="h-14 px-48 flex-1 sm:flex-none uppercase tracking-widest text-[10px] font-bold shadow-gold"
           >
-            {step === STEPS.length - 1 ? 'Begin Analysis' : 'Continue {'->'}'} 
+            {step === STEPS.length - 1 ? 'Begin Analysis' : 'Continue'}
             <ArrowRight className="ml-8 w-4 h-4" />
           </Button>
         </div>
