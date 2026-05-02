@@ -58,7 +58,7 @@ export const signUpWithEmail = async (email: string, password: string, fullName:
 
 export const signInSocial = async (provider: 'google' | 'apple'): Promise<UserCredential> => {
   const p = provider === 'google' ? googleProvider : appleProvider;
-  const credential = await signInWithPopup(auth!, p);
+  const credential = await signInWithPopup(auth!, p).catch(e=>{console.error("GOOGLE AUTH ERROR:",e.code, e.message);throw e;});
   
   // Check if profile exists
   const { data: profile } = await supabase.from('profiles').select('id').eq('id', credential.user.uid).single();
