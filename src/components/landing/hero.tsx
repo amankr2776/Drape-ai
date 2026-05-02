@@ -2,17 +2,25 @@
 
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
-/**
- * @fileOverview Refined hero section for DRAPE AI.
- * Now features a clean, static high-fashion background for a distraction-free entry.
- */
-
 export default function Hero() {
   const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const handleAction = () => {
+    if (isAuthenticated) {
+      router.push('/analyze');
+    } else {
+      router.push('/login?redirect=/analyze');
+    }
+  };
+
+  const scrollToWorks = () => {
+    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -63,17 +71,29 @@ export default function Hero() {
           Precision aesthetic meets intelligent silhouette mapping for the modern Indian wardrobe.
         </motion.p>
 
-        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-6 justify-center pointer-events-auto">
-          <Button asChild size="lg" className="h-[56px] px-[40px] min-w-[220px] max-w-[280px] font-body text-[14px] font-semibold tracking-[0.05em] bg-primary text-obsidian rounded-[8px] border-none shadow-none hover:bg-gold-light hover:translate-y-[-2px] hover:shadow-[0_8px_24px_rgba(201,168,76,0.3)] transition-all duration-[250ms] group">
-            <Link href={isAuthenticated ? "/analyze" : "/login?redirect=/analyze"} className="flex items-center justify-center gap-2">
-              Analyze My Style
-              <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-[4px]" />
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="h-[56px] px-[40px] min-w-[220px] max-w-[280px] font-body text-[14px] font-semibold tracking-[0.05em] text-primary border-[rgba(201,168,76,0.4)] rounded-[8px] bg-transparent hover:border-primary hover:bg-[rgba(201,168,76,0.06)] hover:translate-y-[-1px] transition-all duration-[250ms]">
-            <Link href="/how-it-works">See The Process</Link>
-          </Button>
-        </motion.div>
+        <div className="flex flex-col items-center gap-4 pointer-events-auto">
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center w-full max-w-md mx-auto">
+            <Button 
+              onClick={handleAction}
+              size="lg" 
+              className="h-[56px] flex-1 font-body text-[14px] font-bold tracking-[0.08em] uppercase bg-gradient-to-r from-gold to-gold-light text-obsidian rounded-[10px] border-none shadow-[0_8px_32px_rgba(201,168,76,0.35)] hover:translate-y-[-2px] hover:shadow-[0_12px_40px_rgba(201,168,76,0.45)] transition-all duration-300 group"
+            >
+              Analyze My Style — It's Free
+              <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-200 group-hover:translate-x-[4px]" />
+            </Button>
+            <Button 
+              onClick={scrollToWorks}
+              variant="outline" 
+              size="lg" 
+              className="h-[56px] flex-1 font-body text-[14px] font-bold tracking-[0.08em] uppercase text-primary border-[rgba(201,168,76,0.35)] rounded-[10px] bg-transparent hover:border-gold hover:bg-[rgba(201,168,76,0.06)] hover:translate-y-[-1px] transition-all duration-300"
+            >
+              See How It Works
+            </Button>
+          </motion.div>
+          <motion.p variants={itemVariants} className="text-[11px] text-ivory-3 tracking-[0.05em] uppercase font-medium">
+            No credit card required · Free forever
+          </motion.p>
+        </div>
       </motion.div>
     </section>
   );

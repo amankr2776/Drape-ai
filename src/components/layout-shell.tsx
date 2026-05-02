@@ -1,4 +1,3 @@
-
 'use client';
 
 import { usePathname } from 'next/navigation';
@@ -17,7 +16,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isLanding = pathname === '/';
   const isOnboarding = pathname === '/onboarding';
-  const isAuthPage = pathname?.startsWith('/auth');
+  const isAuthPage = pathname?.startsWith('/auth') || pathname === '/login';
   
   const showSidebar = !isLanding && !isOnboarding && !isAuthPage;
 
@@ -34,16 +33,16 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
           "flex-1 flex flex-col min-h-screen transition-all duration-300",
           showSidebar && "lg:pl-72"
         )}>
-          {!isLanding && !isOnboarding && <Header />}
+          {!isOnboarding && !isAuthPage && <Header />}
           
           <main className={cn(
             "flex-grow flex flex-col",
-            !isLanding && !isOnboarding && "pt-16 pb-24 lg:pb-0"
+            !isOnboarding && !isAuthPage && "pt-16 pb-24 lg:pb-0"
           )}>
             {children}
           </main>
 
-          {!isLanding && !isOnboarding && <Footer />}
+          {!isLanding && !isOnboarding && !isAuthPage && <Footer />}
         </div>
         
         <CookieBanner />

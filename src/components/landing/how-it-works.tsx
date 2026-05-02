@@ -1,9 +1,11 @@
-
 'use client';
 
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Camera, FilePenLine, BrainCircuit, Shirt } from 'lucide-react';
+import { Camera, FilePenLine, BrainCircuit, Shirt, ArrowRight } from 'lucide-react';
 import { useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 const steps = [
   {
@@ -30,12 +32,18 @@ const steps = [
 
 export default function HowItWorks() {
   const containerRef = useRef(null);
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "end start"]
   });
 
   const pathLength = useTransform(scrollYProgress, [0.2, 0.8], [0, 1]);
+
+  const handleStart = () => {
+    router.push(isAuthenticated ? '/analyze' : '/login?redirect=/analyze');
+  };
 
   return (
     <section id="how-it-works" ref={containerRef} className="py-24 md:py-40 bg-card relative overflow-hidden">
@@ -51,7 +59,6 @@ export default function HowItWorks() {
         </motion.div>
 
         <div className="relative">
-          {/* Animated Connecting Line */}
           <div className="hidden md:block absolute top-[48px] left-[12.5%] right-[12.5%] h-px bg-border z-0">
             <motion.div 
               style={{ scaleX: pathLength, originX: 0 }}
@@ -84,6 +91,22 @@ export default function HowItWorks() {
             ))}
           </div>
         </div>
+
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="flex justify-center mt-12 md:mt-24"
+        >
+          <Button 
+            onClick={handleStart}
+            size="lg"
+            className="h-14 px-10 bg-gradient-to-r from-gold to-gold-light text-obsidian font-bold uppercase tracking-widest text-sm rounded-[10px] shadow-[0_8px_24px_rgba(201,168,76,0.3)] hover:translate-y-[-2px] hover:shadow-[0_12px_32px_rgba(201,168,76,0.4)] transition-all group"
+          >
+            Start For Free
+            <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </motion.div>
       </div>
     </section>
   );

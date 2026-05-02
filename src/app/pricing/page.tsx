@@ -24,6 +24,8 @@ import { useSubscription } from '@/hooks/use-subscription';
 import { PaymentModal } from '@/components/subscription/payment-modal';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 const PLANS = [
   {
@@ -43,7 +45,7 @@ const PLANS = [
       { text: 'Wardrobe builder', included: false },
       { text: 'Priority support', included: false },
     ],
-    cta: 'Current Plan',
+    cta: 'Get Started Free',
     popular: false,
   },
   {
@@ -63,7 +65,7 @@ const PLANS = [
       { text: 'Early access features', included: true },
       { text: 'Ad-free experience', included: true },
     ],
-    cta: 'Start 7-Day Free Trial',
+    cta: 'Start Free Trial',
     popular: true,
   },
   {
@@ -95,10 +97,24 @@ export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const { plan, isPro } = useSubscription();
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  const handleCta = (planName: string) => {
+    if (!isAuthenticated) {
+      router.push('/login?redirect=/pricing');
+      return;
+    }
+
+    if (planName === 'Pro') {
+      setIsPaymentModalOpen(true);
+    } else if (planName === 'Free') {
+      router.push('/analyze');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pt-32 pb-20 overflow-hidden">
-      {/* --- HERO SECTION --- */}
       <section className="container mx-auto px-4 text-center mb-20 relative">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 blur-[120px] rounded-full -z-10" />
         
@@ -115,7 +131,7 @@ export default function PricingPage() {
             <span className="text-primary italic">Pay Less Than A Coffee.</span>
           </h1>
           <p className="text-foreground/40 text-lg max-w-2xl mx-auto font-body">
-            Sophisticated styling doesn{"'"}t have to be expensive. Upgrade when you{"'"}re ready. Cancel anytime. No questions asked.
+            Sophisticated styling doesn't have to be expensive. Upgrade when you're ready. Cancel anytime. No questions asked.
           </p>
 
           <div className="flex items-center justify-center gap-6 pt-8">
@@ -133,7 +149,6 @@ export default function PricingPage() {
         </motion.div>
       </section>
 
-      {/* --- PRICING CARDS --- */}
       <section className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 mb-32">
         {PLANS.map((p, i) => (
           <motion.div
@@ -191,14 +206,14 @@ export default function PricingPage() {
 
               <CardFooter className="p-8 border-t border-primary/5">
                 <Button 
-                  onClick={() => p.name === 'Pro' ? setIsPaymentModalOpen(true) : null}
-                  disabled={p.name === 'Free' && plan === 'FREE'}
+                  onClick={() => handleCta(p.name)}
+                  disabled={p.name === 'Free' && plan === 'FREE' && isAuthenticated}
                   className={cn(
-                    "w-full h-14 font-headline text-lg tracking-widest transition-all",
+                    "w-full h-14 font-headline text-lg tracking-widest transition-all uppercase",
                     p.popular ? "bg-primary text-primary-foreground hover:glow-gold" : "bg-card border-primary/20 border hover:bg-primary/10"
                   )}
                 >
-                  {p.name === 'Free' && plan === 'FREE' ? 'Active Plan' : p.cta}
+                  {p.name === 'Free' && plan === 'FREE' && isAuthenticated ? 'Active Plan' : p.cta}
                 </Button>
               </CardFooter>
             </Card>
@@ -206,7 +221,6 @@ export default function PricingPage() {
         ))}
       </section>
 
-      {/* --- COMPARISON TABLE --- */}
       <section className="container mx-auto px-4 mb-40">
         <h2 className="text-4xl font-headline text-center mb-16">Feature Comparison</h2>
         <Card className="max-w-4xl mx-auto bg-card/20 border-primary/10 overflow-hidden">
@@ -240,7 +254,6 @@ export default function PricingPage() {
         </Card>
       </section>
 
-      {/* --- FAQS --- */}
       <section className="container mx-auto px-4 max-w-3xl mb-40">
         <div className="text-center mb-12">
           <HelpCircle className="mx-auto w-10 h-10 text-primary mb-4" />
@@ -258,7 +271,6 @@ export default function PricingPage() {
         </Accordion>
       </section>
 
-      {/* --- SOCIAL PROOF --- */}
       <section className="container mx-auto px-4 mb-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
@@ -270,7 +282,7 @@ export default function PricingPage() {
               <div className="flex justify-center gap-1">
                 {[1, 2, 3, 4, 5].map(s => <Star key={s} size={14} className="fill-primary text-primary" />)}
               </div>
-              <p className="italic text-foreground/80 font-body">{'"'}{t.text}{'"'}</p>
+              <p className="italic text-foreground/80 font-body">"{t.text}"</p>
               <div>
                 <p className="font-bold text-primary">{t.name}</p>
                 <p className="text-[10px] uppercase tracking-widest text-foreground/40">{t.city}</p>
