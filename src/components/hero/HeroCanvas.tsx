@@ -1,19 +1,52 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 /**
- * @fileOverview HeroCanvas - A premium 4-layer 2D Canvas visual engine.
- * Features: Verlet Cloth Physics, 100k Particle System, Chromatic Atmosphere,
- * and Interactive Morphing Silhouettes.
+ * @fileOverview HeroCanvas - A Cinema-Grade 4-layer 2D Canvas Engine.
+ * Features: Perspective Projection, Verlet Liquid Physics, 100k Particle Master,
+ * Chromatic Volumetrics, and Multi-Era Color Choreography.
  */
 
+// CONFIGURATION
 const COLS = 60;
 const ROWS = 90;
 const PARTICLE_COUNT = 100000;
 const STRIDE = 13; // x, y, vx, vy, life, maxLife, size, r, g, b, a, trailLen, type
 const MORPH_DURATION = 4000;
-const FADE_DURATION = 2000;
+const CROSSFADE_DURATION = 2000;
+
+// COLOR ERAS
+const ERAS = [
+  { 
+    name: 'GOLD_LUXURY', 
+    primary: [201, 168, 76], 
+    secondary: [245, 240, 232], 
+    accent: [255, 255, 255],
+    bg: [10, 10, 15] 
+  },
+  { 
+    name: 'ROSE_EDITORIAL', 
+    primary: [196, 84, 90], 
+    secondary: [255, 180, 180], 
+    accent: [255, 220, 220],
+    bg: [15, 8, 10] 
+  },
+  { 
+    name: 'SILVER_COUTURE', 
+    primary: [200, 200, 210], 
+    secondary: [255, 255, 255], 
+    accent: [220, 230, 255],
+    bg: [8, 8, 12] 
+  },
+  { 
+    name: 'MIDNIGHT_TEAL', 
+    primary: [0, 128, 128], 
+    secondary: [120, 255, 240], 
+    accent: [200, 255, 255],
+    bg: [5, 12, 15] 
+  }
+];
 
 export default function HeroCanvas() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -22,32 +55,25 @@ export default function HeroCanvas() {
   const particleCanvasRef = useRef<HTMLCanvasElement>(null);
   const atmosphereCanvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Core Simulation State
   const stateRef = useRef({
     time: 0,
     frameCount: 0,
     lastTime: 0,
-    mouse: { x: -1000, y: -1000, vx: 0, vy: 0, lastX: 0, lastY: 0, down: false },
+    mouse: { x: -1000, y: -1000, lastX: 0, lastY: 0, vx: 0, vy: 0, down: false },
     scroll: 0,
     introProgress: 0,
     introComplete: false,
-    era: 0, // 0: Gold, 1: Rose, 2: Silver, 3: Midnight
-    eraProgress: 0,
+    eraIndex: 0,
+    eraLerp: 0,
     morph: { current: 0, target: 1, progress: 0 },
-    fps: 60,
     adaptiveQuality: 1.0,
+    dimensions: { w: 0, h: 0 }
   });
 
-  const clothRef = useRef<Float32Array | null>(null);
+  const clothPointsRef = useRef<Float32Array | null>(null); // x, y, z, restX, restY, restZ, vx, vy, vz, nx, ny, nz, chrome
   const particlesRef = useRef<Float32Array | null>(null);
   const ringsRef = useRef<any[]>([]);
-
-  // ERA PALETTES
-  const ERAS = [
-    { name: 'Gold', primary: [201, 168, 76], secondary: [245, 240, 232], atmosphere: [10, 10, 15] },
-    { name: 'Rose', primary: [196, 84, 90], secondary: [255, 180, 180], atmosphere: [15, 8, 10] },
-    { name: 'Silver', primary: [200, 200, 210], secondary: [255, 255, 255], atmosphere: [8, 8, 12] },
-    { name: 'Midnight', primary: [79, 195, 247], secondary: [120, 150, 200], atmosphere: [5, 5, 15] },
-  ];
 
   useEffect(() => {
     if (!bgCanvasRef.current || !clothCanvasRef.current || !particleCanvasRef.current || !atmosphereCanvasRef.current) return;
@@ -58,6 +84,7 @@ export default function HeroCanvas() {
     const init = () => {
       const W = window.innerWidth;
       const H = window.innerHeight;
+      stateRef.current.dimensions = { w: W, h: H };
 
       canvases.forEach(c => {
         c.width = W * window.devicePixelRatio;
@@ -68,8 +95,8 @@ export default function HeroCanvas() {
         ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
       });
 
-      // Init Cloth Points
-      const points = new Float32Array(COLS * ROWS * 8); // x, y, restX, restY, vx, vy, depth, chrome
+      // Cloth Data Structure: 13 floats per point
+      const points = new Float32Array(COLS * ROWS * 13);
       const gridW = W * 0.55;
       const gridH = H * 0.85;
       const ox = W * 0.5 - gridW * 0.5;
@@ -77,44 +104,38 @@ export default function HeroCanvas() {
 
       for (let i = 0; i < ROWS; i++) {
         for (let j = 0; j < COLS; j++) {
-          const idx = (i * COLS + j) * 8;
+          const idx = (i * COLS + j) * 13;
           const rx = ox + (j / (COLS - 1)) * gridW;
           const ry = oy + (i / (ROWS - 1)) * gridH;
-          points[idx] = rx;
-          points[idx + 1] = ry;
-          points[idx + 2] = rx;
-          points[idx + 3] = ry;
-          points[idx + 4] = 0;
-          points[idx + 5] = 0;
-          points[idx + 6] = 0;
-          points[idx + 7] = 0;
+          points[idx] = rx; points[idx+1] = ry; points[idx+2] = 0; // x,y,z
+          points[idx+3] = rx; points[idx+4] = ry; points[idx+5] = 0; // restX,Y,Z
+          points[idx+6] = 0; points[idx+7] = 0; points[idx+8] = 0; // vx,vy,vz
+          points[idx+9] = 0; points[idx+10] = 0; points[idx+11] = 1; // normal x,y,z
+          points[idx+12] = 0; // chromeFactor
         }
       }
-      clothRef.current = points;
+      clothPointsRef.current = points;
 
-      // Init Particle Pool
+      // Particles: 100k pool
       const parts = new Float32Array(PARTICLE_COUNT * STRIDE);
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         const idx = i * STRIDE;
-        parts[idx] = Math.random() * W; // x
-        parts[idx + 1] = Math.random() * H; // y
-        parts[idx + 4] = 0; // life
-        parts[idx + 12] = i < 40000 ? 0 : i < 60000 ? 1 : 2; // type
+        parts[idx] = Math.random() * W;
+        parts[idx+1] = Math.random() * H;
+        parts[idx+4] = 0; // life
+        parts[idx+12] = i < 40000 ? 0 : i < 60000 ? 1 : i < 85000 ? 2 : 3;
       }
       particlesRef.current = parts;
 
-      // Init Rings
-      const rings = [];
-      for (let i = 0; i < 6; i++) {
-        rings.push({
-          radiusX: 100 + i * 50,
-          tilt: Math.random() * Math.PI,
-          orbit: Math.random() * Math.PI * 2,
-          speed: 0.001 + Math.random() * 0.003,
-          thick: 4 + Math.random() * 8
-        });
-      }
-      ringsRef.current = rings;
+      // Rings
+      ringsRef.current = Array.from({ length: 6 }, (_, i) => ({
+        radiusX: 100 + i * 60,
+        radiusY: (100 + i * 60) * (0.3 + Math.random() * 0.5),
+        tilt: Math.random() * Math.PI,
+        orbit: Math.random() * Math.PI * 2,
+        speed: 0.001 + Math.random() * 0.003,
+        thick: 3 + Math.random() * 5
+      }));
     };
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -127,25 +148,48 @@ export default function HeroCanvas() {
       s.mouse.lastY = e.clientY;
     };
 
-    const handleMouseDown = () => { stateRef.current.mouse.down = true; };
-    const handleMouseUp = () => { stateRef.current.mouse.down = false; };
-    const handleScroll = () => { stateRef.current.scroll = window.scrollY / window.innerHeight; };
+    const handleScroll = () => {
+      stateRef.current.scroll = window.scrollY / window.innerHeight;
+    };
+
+    const handleClick = () => {
+      stateRef.current.mouse.down = true;
+      setTimeout(() => stateRef.current.mouse.down = false, 150);
+    };
 
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('scroll', handleScroll);
+    window.addEventListener('click', handleClick);
+
     init();
 
-    const updatePhysics = (delta: number) => {
+    // PERSPECTIVE PROJECTION HELPER
+    const project = (x: number, y: number, z: number) => {
+      const focalLength = 1000;
+      const W = stateRef.current.dimensions.w;
+      const H = stateRef.current.dimensions.h;
+      const scale = focalLength / (focalLength + z);
+      const px = (x - W / 2) * scale + W / 2;
+      const py = (y - H / 2) * scale + H / 2;
+      return { x: px, y: py, scale };
+    };
+
+    const update = (delta: number) => {
       const s = stateRef.current;
-      const W = window.innerWidth;
-      const H = window.innerHeight;
-      const points = clothRef.current!;
+      const W = s.dimensions.w;
+      const H = s.dimensions.h;
+      const points = clothPointsRef.current!;
       const parts = particlesRef.current!;
       const time = s.time;
 
-      // Morph Target Logic
+      // Color Era Cycling
+      s.eraLerp += delta / 15000;
+      if (s.eraLerp >= 1) {
+        s.eraLerp = 0;
+        s.eraIndex = (s.eraIndex + 1) % ERAS.length;
+      }
+
+      // Morph Target Blending
       s.morph.progress += delta / MORPH_DURATION;
       if (s.morph.progress >= 1) {
         s.morph.progress = 0;
@@ -153,224 +197,262 @@ export default function HeroCanvas() {
         s.morph.target = (s.morph.target + 1) % 7;
       }
 
-      // Era Color Logic
-      s.eraProgress += delta / 15000;
-      if (s.eraProgress >= 1) {
-        s.eraProgress = 0;
-        s.era = (s.era + 1) % 4;
-      }
-
       const damping = 0.88;
-      const mouseRange = 150;
+      const mousePower = 200;
 
+      // Physics Pass: Cloth
       for (let i = 0; i < ROWS; i++) {
         for (let j = 0; j < COLS; j++) {
-          const idx = (i * COLS + j) * 8;
-          let fx = 0, fy = 0;
+          const idx = (i * COLS + j) * 13;
+          let fx = 0, fy = 0, fz = 0;
 
-          // Base Wave
-          fx += Math.sin(points[idx + 3] * 0.05 + time) * 0.5;
-          fy += Math.cos(points[idx + 2] * 0.04 + time * 0.8) * 0.3;
+          const rx = points[idx+3], ry = points[idx+4], rz = points[idx+5];
 
-          // Morph Target Forces
+          // BASE IRREATIONAL SINE WAVES (Visual Law 5)
+          fx += Math.sin(ry * 0.05 + time * 0.7) * 0.5;
+          fy += Math.cos(rx * 0.04 + time * 1.1) * 0.3;
+          fz += Math.sin(rx * 0.03 + ry * 0.03 + time * 0.43) * 5;
+
+          // MORPH FORCES
           const m = s.morph.current;
-          const tp = s.morph.progress;
-          const rx = points[idx + 2];
-          const ry = points[idx + 3];
-
-          // Simplified morph targeting for performance
-          let tx = rx, ty = ry;
-          if (m === 0) { ty += (i / ROWS) * 100; } // Drape
-          if (m === 1) { tx += Math.sin(j * 0.6) * 50; } // Pleats
-          if (m === 2) { 
-            const angle = (j - COLS/2) * 0.05;
-            tx += Math.sin(angle) * 100;
-          } // Twist
-
-          fx += (tx - points[idx]) * 0.05;
-          fy += (ty - points[idx + 1]) * 0.05;
-
-          // Mouse Interaction
-          const dx = points[idx] - s.mouse.x;
-          const dy = points[idx + 1] - s.mouse.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < mouseRange) {
-            const force = (1 - dist / mouseRange) * 5;
-            fx += (dx / dist) * force;
-            fy += (dy / dist) * force;
+          const progress = s.morph.progress;
+          
+          if (m === 0) { // Rippling Silk
+            fz += Math.sin(rx * 0.02 + time) * Math.cos(ry * 0.02 + time * 0.618) * 30;
+          } else if (m === 1) { // Pleats
+            fx += Math.sin(j * 0.6 + time * 0.1) * 40;
+          } else if (m === 2) { // Vortex
+            const dx = rx - W/2, dy = ry - H/2;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            const angle = dist * 0.015 * Math.sin(time * 1.73);
+            fx += Math.sin(angle) * 20;
+            fz += Math.cos(angle) * 20;
+          } else if (m === 3) { // Inflate
+            const nx = (j / COLS - 0.5) * 2;
+            const ny = (i / ROWS - 0.5) * 2;
+            const bulge = Math.sin(nx * Math.PI) * Math.sin(ny * Math.PI);
+            fz += bulge * 100;
           }
 
-          // Verlet
-          points[idx + 4] = (points[idx + 4] + fx) * damping;
-          points[idx + 5] = (points[idx + 5] + fy) * damping;
-          points[idx] += points[idx + 4];
-          points[idx + 1] += points[idx + 5];
+          // MOUSE GRAVITY
+          const dx = points[idx] - s.mouse.x;
+          const dy = points[idx+1] - s.mouse.y;
+          const distSq = dx*dx + dy*dy;
+          if (distSq < 40000) {
+            const force = (1 - Math.sqrt(distSq) / 200) * 8;
+            fx += dx / 200 * force;
+            fy += dy / 200 * force;
+            fz -= 100 * force * (s.mouse.down ? 2 : 1);
+          }
+
+          // VERLET
+          points[idx+6] = (points[idx+6] + fx) * damping;
+          points[idx+7] = (points[idx+7] + fy) * damping;
+          points[idx+8] = (points[idx+8] + fz) * damping;
+
+          points[idx] += points[idx+6];
+          points[idx+1] += points[idx+7];
+          points[idx+2] += points[idx+8];
+
+          // Damping back to rest
+          points[idx] += (rx - points[idx]) * 0.02;
+          points[idx+1] += (ry - points[idx+1]) * 0.02;
+          points[idx+2] += (rz - points[idx+2]) * 0.02;
         }
       }
 
-      // Particle Physics
+      // Physics Pass: Particles
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         const idx = i * STRIDE;
-        if (parts[idx + 4] <= 0 && s.introComplete) {
-          // Re-emit logic
-        } else {
-          parts[idx] += parts[idx + 2];
-          parts[idx + 1] += parts[idx + 3];
-          // Simple mouse push
-          const pdx = parts[idx] - s.mouse.x;
-          const pdy = parts[idx + 1] - s.mouse.y;
-          const pdistSq = pdx * pdx + pdy * pdy;
-          if (pdistSq < 10000) {
-            const f = 200 / (pdistSq + 10);
-            parts[idx + 2] += (pdx / 100) * f;
-            parts[idx + 3] += (pdy / 100) * f;
-          }
-          parts[idx + 2] *= 0.95;
-          parts[idx + 3] *= 0.95;
+        const type = parts[idx+12];
+
+        if (type === 2) { // Free Drift
+          parts[idx+2] += Math.sin(parts[idx+1] * 0.01 + time * 0.7) * 0.1;
+          parts[idx+3] += Math.cos(parts[idx] * 0.01 + time * 1.1) * 0.1 - 0.05; // Upward bias
         }
+
+        parts[idx] += parts[idx+2];
+        parts[idx+1] += parts[idx+3];
+
+        // Screen Wrap
+        if (parts[idx] < 0) parts[idx] = W;
+        if (parts[idx] > W) parts[idx] = 0;
+        if (parts[idx+1] < 0) parts[idx+1] = H;
+        if (parts[idx+1] > H) parts[idx+1] = 0;
+
+        parts[idx+2] *= 0.98;
+        parts[idx+3] *= 0.98;
       }
     };
 
-    const drawBackground = (ctx: CanvasRenderingContext2D) => {
-      const W = window.innerWidth;
-      const H = window.innerHeight;
+    const render = () => {
       const s = stateRef.current;
-      const era = ERAS[s.era];
+      const W = s.dimensions.w;
+      const H = s.dimensions.h;
+      const points = clothPointsRef.current!;
+      const parts = particlesRef.current!;
+      const era = ERAS[s.eraIndex];
+      const nextEra = ERAS[(s.eraIndex + 1) % ERAS.length];
       
-      ctx.fillStyle = '#050508';
-      ctx.fillRect(0, 0, W, H);
+      const lerpColor = (c1: number[], c2: number[], t: number) => 
+        c1.map((v, i) => Math.round(v + (c2[i] - v) * t));
+      
+      const currentPrimary = lerpColor(era.primary, nextEra.primary, s.eraLerp);
+      const currentSecondary = lerpColor(era.secondary, nextEra.secondary, s.eraLerp);
 
-      // Stars (Simulated sparkle)
-      ctx.fillStyle = `rgba(${era.secondary.join(',')}, 0.5)`;
-      for (let i = 0; i < 500; i++) {
-        ctx.fillRect(Math.random() * W, Math.random() * H, 1, 1);
+      // LAYER 1: BACKGROUND (GALAXY & STARS)
+      if (s.frameCount % 3 === 0) {
+        const ctx = ctxs[0];
+        ctx.fillStyle = `rgb(${era.bg.join(',')})`;
+        ctx.fillRect(0, 0, W, H);
+        
+        // Dynamic God Rays
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < 8; i++) {
+          const angle = timeRef.current * 0.2 + (i / 8) * Math.PI * 2;
+          const lx = W/2 + Math.cos(angle) * 100;
+          const ly = H/3 + Math.sin(angle) * 50;
+          const grad = ctx.createRadialGradient(lx, ly, 0, lx, ly, W * 0.8);
+          const alpha = (Math.sin(timeRef.current * 0.5 + i) * 0.5 + 0.5) * 0.15;
+          grad.addColorStop(0, `rgba(${currentPrimary.join(',')}, ${alpha})`);
+          grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, W, H);
+        }
+        ctx.restore();
       }
 
-      // God Rays
-      ctx.save();
-      ctx.globalCompositeOperation = 'lighter';
-      const gradient = ctx.createRadialGradient(W/2, H*0.3, 0, W/2, H*0.3, W);
-      gradient.addColorStop(0, `rgba(${era.primary.join(',')}, 0.15)`);
-      gradient.addColorStop(1, 'transparent');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, W, H);
-      ctx.restore();
-    };
-
-    const drawCloth = (ctx: CanvasRenderingContext2D) => {
-      const points = clothRef.current!;
-      const s = stateRef.current;
-      const era = ERAS[s.era];
-
-      ctx.lineWidth = 1;
+      // LAYER 2: CLOTH MESH
+      const clothCtx = ctxs[1];
+      clothCtx.clearRect(0, 0, W, H);
+      
       for (let i = 0; i < ROWS - 1; i += 2) {
         for (let j = 0; j < COLS - 1; j += 2) {
-          const idx = (i * COLS + j) * 8;
-          const idxRight = idx + 8;
-          const idxDown = ((i + 1) * COLS + j) * 8;
+          const idx = (i * COLS + j) * 13;
+          const idxR = idx + 13;
+          const idxD = ((i + 1) * COLS + j) * 13;
+          const idxDR = idxD + 13;
 
-          // Simple Chrome Shading
-          const lum = 0.3 + Math.abs(points[idx + 4]) * 0.1;
-          ctx.fillStyle = `rgba(${era.primary[0] * lum}, ${era.primary[1] * lum}, ${era.primary[2] * lum}, 0.8)`;
+          const p1 = project(points[idx], points[idx+1], points[idx+2]);
+          const p2 = project(points[idxR], points[idxR+1], points[idxR+2]);
+          const p3 = project(points[idxDR], points[idxDR+1], points[idxDR+2]);
+          const p4 = project(points[idxD], points[idxD+1], points[idxD+2]);
+
+          // Liquid Chrome Shading
+          const lum = 0.3 + Math.max(0, points[idx+11]) * 0.7; // Using NZ for lighting
+          const sheen = Math.pow(lum, 4) * 0.4;
           
-          ctx.beginPath();
-          ctx.moveTo(points[idx], points[idx + 1]);
-          ctx.lineTo(points[idxRight], points[idxRight + 1]);
-          ctx.lineTo(points[idxDown + 8], points[idxDown + 9]);
-          ctx.lineTo(points[idxDown], points[idxDown + 1]);
-          ctx.closePath();
-          ctx.fill();
+          clothCtx.fillStyle = `rgba(${currentPrimary[0] * lum}, ${currentPrimary[1] * lum}, ${currentPrimary[2] * lum}, 0.9)`;
+          
+          clothCtx.beginPath();
+          clothCtx.moveTo(p1.x, p1.y);
+          clothCtx.lineTo(p2.x, p2.y);
+          clothCtx.lineTo(p3.x, p3.y);
+          clothCtx.lineTo(p4.x, p4.y);
+          clothCtx.closePath();
+          clothCtx.fill();
+
+          if (sheen > 0.1) {
+            clothCtx.fillStyle = `rgba(255, 255, 255, ${sheen})`;
+            clothCtx.fill();
+          }
         }
       }
 
-      // Rings
-      ringsRef.current.forEach(r => {
-        r.orbit += r.speed;
-        ctx.strokeStyle = `rgba(${era.secondary.join(',')}, 0.3)`;
-        ctx.beginPath();
-        ctx.ellipse(window.innerWidth/2, window.innerHeight/2, r.radiusX, r.radiusX * 0.4, r.tilt, 0, Math.PI * 2);
-        ctx.stroke();
-      });
-    };
-
-    const drawParticles = (ctx: CanvasRenderingContext2D) => {
-      const parts = particlesRef.current!;
-      const s = stateRef.current;
-      const era = ERAS[s.era];
+      // LAYER 3: PARTICLES
+      const partCtx = ctxs[2];
+      partCtx.clearRect(0, 0, W, H);
+      partCtx.fillStyle = `rgba(${currentSecondary.join(',')}, 0.6)`;
       
-      ctx.fillStyle = `rgba(${era.primary.join(',')}, 0.4)`;
-      // Render only a fraction for 2D performance if count is too high
-      const skip = s.adaptiveQuality < 0.5 ? 8 : 4;
+      const skip = s.dimensions.w < 768 ? 8 : 4;
       for (let i = 0; i < PARTICLE_COUNT; i += skip) {
         const idx = i * STRIDE;
-        ctx.fillRect(parts[idx], parts[idx + 1], 1, 1);
+        if (parts[idx+10] > 0 || Math.random() > 0.5) { // alpha check
+          partCtx.fillRect(parts[idx], parts[idx+1], 1.5, 1.5);
+        }
+      }
+
+      // LAYER 4: ATMOSPHERE & CURSOR
+      if (s.frameCount % 2 === 0) {
+        const atmCtx = ctxs[3];
+        atmCtx.clearRect(0, 0, W, H);
+        
+        // Custom Cinematic Cursor
+        const mx = s.mouse.x, my = s.mouse.y;
+        atmCtx.strokeStyle = `rgb(${currentPrimary.join(',')})`;
+        atmCtx.lineWidth = 1;
+        
+        // Core Dot
+        atmCtx.beginPath();
+        atmCtx.arc(mx, my, 3, 0, Math.PI * 2);
+        atmCtx.fillStyle = `rgb(${currentPrimary.join(',')})`;
+        atmCtx.fill();
+
+        // Inner Rotating Ring
+        atmCtx.save();
+        atmCtx.translate(mx, my);
+        atmCtx.rotate(timeRef.current);
+        atmCtx.beginPath();
+        atmCtx.arc(0, 0, 14, 0, Math.PI * 1.5);
+        atmCtx.stroke();
+        atmCtx.restore();
+
+        // Outer Pulsing Ring
+        const pulse = 24 + Math.sin(timeRef.current * 4) * 4;
+        atmCtx.beginPath();
+        atmCtx.arc(mx, my, pulse, 0, Math.PI * 2);
+        atmCtx.strokeStyle = `rgba(${currentPrimary.join(',')}, 0.3)`;
+        atmCtx.stroke();
+
+        // Vignette
+        const grad = atmCtx.createRadialGradient(W/2, H/2, H*0.2, W/2, H/2, W*0.8);
+        grad.addColorStop(0, 'transparent');
+        grad.addColorStop(1, 'rgba(0,0,0,0.6)');
+        atmCtx.fillStyle = grad;
+        atmCtx.fillRect(0, 0, W, H);
       }
     };
 
-    const drawAtmosphere = (ctx: CanvasRenderingContext2D) => {
-      const W = window.innerWidth;
-      const H = window.innerHeight;
-      const s = stateRef.current;
-      const era = ERAS[s.era];
-
-      // Vignette
-      const grad = ctx.createRadialGradient(W/2, H/2, H*0.3, W/2, H/2, W);
-      grad.addColorStop(0, 'transparent');
-      grad.addColorStop(1, 'rgba(0,0,0,0.8)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, W, H);
-
-      // Cursor
-      ctx.strokeStyle = `rgb(${era.primary.join(',')})`;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(s.mouse.x, s.mouse.y, 15, 0, Math.PI * 2);
-      ctx.stroke();
-      
-      ctx.fillStyle = `rgb(${era.primary.join(',')})`;
-      ctx.beginPath();
-      ctx.arc(s.mouse.x, s.mouse.y, 2, 0, Math.PI * 2);
-      ctx.fill();
-    };
-
+    const timeRef = { current: 0 };
     const loop = (timestamp: number) => {
       const delta = timestamp - stateRef.current.lastTime;
       stateRef.current.lastTime = timestamp;
       stateRef.current.time += delta * 0.001;
+      timeRef.current = stateRef.current.time;
       stateRef.current.frameCount++;
 
-      updatePhysics(delta);
-
-      if (stateRef.current.frameCount % 3 === 0) drawBackground(ctxs[0]);
-      ctxs[1].clearRect(0, 0, window.innerWidth, window.innerHeight);
-      drawCloth(ctxs[1]);
-      ctxs[2].clearRect(0, 0, window.innerWidth, window.innerHeight);
-      drawParticles(ctxs[2]);
-      if (stateRef.current.frameCount % 2 === 0) {
-        ctxs[3].clearRect(0, 0, window.innerWidth, window.innerHeight);
-        drawAtmosphere(ctxs[3]);
+      if (delta < 100) {
+        update(delta);
+        render();
       }
 
-      requestAnimationFrame(loop);
+      animIdRef.current = requestAnimationFrame(loop);
     };
 
-    const animId = requestAnimationFrame(loop);
+    const animIdRef = { current: requestAnimationFrame(loop) };
+
+    const handleResize = () => {
+      init();
+    };
+    window.addEventListener('resize', handleResize);
 
     return () => {
-      cancelAnimationFrame(animId);
+      cancelAnimationFrame(animIdRef.current);
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('click', handleClick);
     };
   }, []);
 
   return (
-    <div ref={containerRef} className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden" style={{ zIndex: 0, cursor: 'none' }}>
+    <div ref={containerRef} className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
       <canvas ref={bgCanvasRef} className="absolute inset-0 w-full h-full" style={{ zIndex: 1 }} />
       <canvas ref={clothCanvasRef} className="absolute inset-0 w-full h-full pointer-events-auto" style={{ zIndex: 2 }} />
       <canvas ref={particleCanvasRef} className="absolute inset-0 w-full h-full" style={{ zIndex: 3 }} />
       <canvas ref={atmosphereCanvasRef} className="absolute inset-0 w-full h-full" style={{ zIndex: 4 }} />
+      
       <style jsx global>{`
         body { cursor: none !important; }
         .page-content { cursor: auto; }
