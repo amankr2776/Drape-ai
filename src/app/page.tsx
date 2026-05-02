@@ -10,6 +10,7 @@ import HeroCanvas from '@/components/hero/HeroCanvas';
 export default function Home() {
   return (
     <div className="overflow-x-hidden relative bg-background">
+      {/* ATELIER SINGULARITY ENGINE */}
       <HeroCanvas />
       
       <motion.div
