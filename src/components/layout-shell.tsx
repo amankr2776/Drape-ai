@@ -10,6 +10,7 @@ import { CustomCursor } from '@/components/custom-cursor';
 import { AppLoader } from '@/components/app-loader';
 import { CookieBanner } from '@/components/legal/cookie-banner';
 import { ChatWidget } from '@/components/chat-widget';
+import { MandatoryPrivacyGate } from './mandatory-privacy-gate';
 
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -23,6 +24,7 @@ export function LayoutShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col min-h-screen">
       <AppLoader />
+      <MandatoryPrivacyGate />
       <CustomCursor />
       
       {!isLanding && !isOnboarding && <Header />}

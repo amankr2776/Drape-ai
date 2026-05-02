@@ -26,7 +26,9 @@ import {
   CreditCard,
   Download,
   AlertTriangle,
-  Sparkles
+  Sparkles,
+  Loader2,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,6 +50,7 @@ import {
   DialogTitle,
   DialogTrigger 
 } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -58,109 +61,115 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
   const [isEditing, setIsEditing] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const { plan, isPro, cancelSubscription } = useSubscription();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Mock Data
+  // Profile State
   const [profile, setProfile] = useState({
     name: 'Ananya Sharma',
     handle: '@ananya_style',
     email: 'ananya.sharma@example.com',
     memberSince: 'March 2025',
+    bio: 'Fashion enthusiast exploring the intersection of traditional handloom and AI precision.',
+    city: 'Indiranagar, Bangalore',
     stats: { saved: 42, created: 12, explored: 128 },
     body: { shape: 'Pear', height: 164, size: 'M' },
     skin: { monk: 6, hex: '#A67A5B', tone: 'Medium Warm' },
     budget: [2000, 8000],
     occasions: ['Wedding', 'Date Night', 'Traditional'],
-    vibe: 'Ethnic Fusion'
+    vibe: 'Ethnic Fusion',
+    photo: 'https://picsum.photos/seed/ananya/400/400'
   });
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(`https://drape.ai/${profile.handle}`);
-    toast({
-      title: "Link Copied",
-      description: "Your style profile link is now in your clipboard.",
-    });
+  const handlePhotoClick = () => fileInputRef.current?.click();
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      // Simulate upload process
+      const reader = new FileReader();
+      reader.onload = (loadEvent) => {
+        setProfile(prev => ({ ...prev, photo: loadEvent.target?.result as string }));
+        setIsUploading(false);
+        toast({ title: "Avatar Updated", description: "Your profile identity has been refreshed." });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleUpdate = () => {
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    setIsSaving(false);
     setIsEditing(false);
-    toast({
-      title: "Profile Updated",
-      description: "Your changes have been saved to the atelier.",
-    });
+    toast({ title: "Changes Dispatched", description: "Your atelier profile has been updated successfully." });
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      {/* --- HEADER SECTION --- */}
-      <section className="relative pt-12">
-        <div className="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-primary/10 to-background z-0" />
-        
-        <div className="container mx-auto px-4 relative z-10 flex flex-col items-center">
-          {/* Profile Image */}
-          <div className="relative group mb-6">
-            <motion.div 
-              animate={{ boxShadow: isPro ? ["0 0 0 0px rgba(201,168,76,0.3)", "0 0 0 10px rgba(201,168,76,0)"] : "none" }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className={cn("rounded-full p-1", isPro ? "bg-primary/20" : "bg-muted")}
-            >
-              <Avatar className="w-32 h-32 border-4 border-background">
-                <AvatarImage src="https://picsum.photos/seed/ananya/200/200" alt={profile.name} />
-                <AvatarFallback className="text-4xl font-headline bg-primary/10 text-primary">AS</AvatarFallback>
-              </Avatar>
-            </motion.div>
-            <button className="absolute bottom-0 right-0 p-2 bg-primary rounded-full text-primary-foreground shadow-lg hover:scale-110 transition-transform">
-              <Camera size={18} />
-            </button>
-            {isPro && (
-              <div className="absolute -top-2 -right-2">
-                <ProBadge size="lg" />
+    <div className="min-h-screen bg-obsidian pb-32">
+      {/* Header Banner */}
+      <section className="relative h-64 md:h-80 w-full overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-gold/15 to-obsidian" />
+        <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/fashion-bg/1200/400')] opacity-10 bg-cover bg-center grayscale" />
+        <div className="container mx-auto px-6 h-full flex flex-col justify-end pb-12 relative z-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-10">
+              <div className="relative group">
+                <Avatar className="w-32 h-32 md:w-44 md:h-44 border-[6px] border-obsidian shadow-2xl relative overflow-hidden bg-obsidian-3">
+                  <AvatarImage src={profile.photo} className="object-cover" />
+                  <AvatarFallback className="text-4xl font-headline bg-gold/10 text-gold">AS</AvatarFallback>
+                  {isUploading && (
+                    <div className="absolute inset-0 bg-obsidian/60 flex items-center justify-center">
+                      <Loader2 className="animate-spin text-gold" size={32} />
+                    </div>
+                  )}
+                </Avatar>
+                <button 
+                  onClick={handlePhotoClick}
+                  className="absolute bottom-2 right-2 p-3 bg-gold rounded-full text-obsidian shadow-xl hover:scale-110 transition-transform z-20 border-4 border-obsidian"
+                >
+                  <Camera size={20} />
+                </button>
+                <input type="file" ref={fileInputRef} onChange={handlePhotoUpload} className="hidden" accept="image/*" />
+                {isPro && <div className="absolute -top-2 -left-2"><ProBadge size="lg" /></div>}
               </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <h1 className="text-4xl md:text-5xl font-headline font-bold text-foreground mb-1">{profile.name}</h1>
-            {isPro && <ProBadge size="md" />}
-          </div>
-          <p className="text-primary font-body tracking-[0.2em] uppercase text-sm mb-2">{profile.handle}</p>
-          <p className="text-foreground/40 text-xs mb-8">Style Member since {profile.memberSince}</p>
-
-          <div className="flex gap-12 md:gap-24 mb-10">
-            {[
-              { val: profile.stats.saved, label: 'Saved' },
-              { val: profile.stats.created, label: 'Looks' },
-              { val: profile.stats.explored, label: 'Explored' }
-            ].map((s, i) => (
-              <div key={i} className="text-center">
-                <p className="text-3xl font-headline font-bold text-primary">{s.val}</p>
-                <p className="text-[10px] uppercase tracking-widest text-foreground/40">{s.label}</p>
+              
+              <div className="text-center md:text-left space-y-2 pb-2">
+                <div className="flex items-center justify-center md:justify-start gap-3">
+                  <h1 className="text-4xl md:text-6xl font-headline text-ivory">{profile.name}</h1>
+                  {isPro && <ProBadge size="md" className="hidden md:flex" />}
+                </div>
+                <p className="text-gold font-body tracking-[0.3em] uppercase text-sm">{profile.handle}</p>
+                <p className="text-ivory-4 text-xs">Member since {profile.memberSince} • {profile.city}</p>
               </div>
-            ))}
-          </div>
+            </div>
 
-          <div className="flex gap-4">
-            <Button onClick={() => setIsEditing(!isEditing)} variant="outline" className="border-primary/20">
-              <Edit3 size={16} className="mr-2" /> {isEditing ? 'Cancel Edit' : 'Edit Profile'}
-            </Button>
-            <Button onClick={handleShare} variant="outline" className="border-primary/20">
-              <Share2 size={16} className="mr-2" /> Share Profile
-            </Button>
+            <div className="flex gap-4 justify-center md:pb-2">
+              <Button onClick={() => setIsEditing(!isEditing)} variant={isEditing ? "outline" : "primary"} className="h-12 px-8 font-headline tracking-widest uppercase text-sm">
+                {isEditing ? 'Cancel Edit' : <><Edit3 size={16} className="mr-2" /> Edit Profile</>}
+              </Button>
+              <Button variant="outline" className="h-12 w-12 p-0 border-gold/20 hover:border-gold">
+                <Share2 size={18} />
+              </Button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* --- TABS NAVIGATION --- */}
-      <div className="container mx-auto px-4 mt-16">
+      {/* Tabs Layout */}
+      <div className="container mx-auto px-6 mt-12">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex justify-center border-b border-primary/10 mb-12">
-            <TabsList className="bg-transparent h-12 gap-8 md:gap-16">
+          <div className="sticky top-[64px] z-[100] bg-obsidian/95 backdrop-blur-xl border-b border-border flex justify-center mb-12">
+            <TabsList className="bg-transparent h-14 gap-8 md:gap-16">
               {['Overview', 'Style Profile', 'Activity', 'Settings'].map((tab) => (
                 <TabsTrigger 
                   key={tab}
                   value={tab.toLowerCase()} 
-                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-primary rounded-none px-0 h-12 uppercase tracking-[0.2em] text-[10px] font-bold"
+                  className="bg-transparent data-[state=active]:bg-transparent data-[state=active]:text-gold data-[state=active]:shadow-none border-b-2 border-transparent data-[state=active]:border-gold rounded-none px-0 h-14 uppercase tracking-[0.2em] text-[10px] font-bold transition-all"
                 >
                   {tab}
                 </TabsTrigger>
@@ -168,89 +177,71 @@ export default function ProfilePage() {
             </TabsList>
           </div>
 
-          {/* --- TAB 1: OVERVIEW --- */}
+          {/* Overview Panel */}
           <TabsContent value="overview" className="space-y-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Snapshot Card */}
-              <Card className="bg-card/40 border-primary/10 lg:col-span-2 overflow-hidden relative">
-                <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
-                <CardHeader>
-                  <CardTitle className="text-2xl text-primary">Style Snapshot</CardTitle>
-                  <CardDescription>A visual summary of your fashion identity.</CardDescription>
-                </CardHeader>
-                <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                  <div className="space-y-2">
-                    <p className="text-[10px] uppercase tracking-widest text-foreground/40">Body Shape</p>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary">
-                        <User size={20} />
-                      </div>
-                      <span className="font-headline text-lg">{profile.body.shape}</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Stats Card */}
+              <Card className="bg-obsidian-2/50 border-gold/10 p-8 flex flex-col justify-center text-center space-y-6">
+                <div className="flex justify-around items-center">
+                  {[
+                    { val: profile.stats.saved, label: 'Saved' },
+                    { val: profile.stats.created, label: 'Outfits' },
+                    { val: profile.stats.explored, label: 'Views' }
+                  ].map((s, i) => (
+                    <div key={i}>
+                      <p className="text-3xl font-headline text-gold">{s.val}</p>
+                      <p className="text-[10px] uppercase tracking-widest text-ivory-4 font-bold">{s.label}</p>
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-[10px] uppercase tracking-widest text-foreground/40">Skin Tone</p>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded shadow-inner" style={{ backgroundColor: profile.skin.hex }} />
-                      <span className="font-headline text-lg">{profile.skin.tone}</span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <p className="text-[10px] uppercase tracking-widest text-foreground/40">Height</p>
-                    <div className="flex items-center gap-3">
-                       <Ruler size={20} className="text-primary" />
-                       <span className="font-headline text-lg">{profile.body.height} cm</span>
-                    </div>
-                  </div>
-                   <div className="space-y-2">
-                    <p className="text-[10px] uppercase tracking-widest text-foreground/40">Vibe</p>
-                    <div className="flex items-center gap-3">
-                       <Palette size={20} className="text-primary" />
-                       <span className="font-headline text-lg">{profile.vibe}</span>
-                    </div>
-                  </div>
-                </CardContent>
-                <div className="px-6 pb-6">
-                   <Button asChild variant="link" className="text-primary p-0 h-auto text-xs uppercase tracking-widest">
-                     <Link href="/onboarding">Update Style Profile →</Link>
-                   </Button>
+                  ))}
                 </div>
+                <Separator className="bg-gold/5" />
+                <p className="text-xs italic text-ivory-3 leading-relaxed">"{profile.bio}"</p>
               </Card>
 
-              {/* Fav Brands */}
-              <Card className="bg-card/40 border-primary/10">
-                 <CardHeader>
-                  <CardTitle className="text-xl">Preferred Brands</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {['Zara', 'Fabindia', 'H&M', 'Biba', 'Sabyasachi'].map(b => (
-                      <Badge key={b} variant="secondary" className="bg-primary/5 text-primary border-primary/10 py-1 px-3">
-                        {b}
-                      </Badge>
+              {/* Identity Snapshot */}
+              <Card className="md:col-span-2 bg-obsidian-2/50 border-gold/10 overflow-hidden relative">
+                 <div className="absolute top-0 left-0 w-1.5 h-full bg-gold" />
+                 <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-2xl text-gold">Aesthetic Identity</CardTitle>
+                    <CardDescription className="text-ivory-4">Your current style DNA across the atelier.</CardDescription>
+                 </CardHeader>
+                 <CardContent className="p-8 grid grid-cols-2 lg:grid-cols-4 gap-8">
+                    {[
+                      { icon: User, label: 'Body Shape', val: profile.body.shape },
+                      { icon: Ruler, label: 'Height', val: `${profile.body.height} cm` },
+                      { icon: Palette, label: 'Skin Tone', val: profile.skin.tone },
+                      { icon: Sparkles, label: 'Style Vibe', val: profile.vibe }
+                    ].map((item, i) => (
+                      <div key={i} className="space-y-2">
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-ivory-4 font-bold">{item.label}</p>
+                        <div className="flex items-center gap-3">
+                          <item.icon size={18} className="text-gold/60" />
+                          <span className="font-headline text-xl text-ivory">{item.val}</span>
+                        </div>
+                      </div>
                     ))}
-                    <Button variant="ghost" size="sm" className="h-7 text-xs border border-dashed border-primary/20">
-                      <Plus size={12} className="mr-1" /> Add
+                 </CardContent>
+                 <div className="px-8 pb-8 flex justify-end">
+                    <Button asChild variant="link" className="text-gold uppercase tracking-widest text-[10px] p-0 h-auto font-bold">
+                      <Link href="/analyze">Update DNA →</Link>
                     </Button>
-                  </div>
-                </CardContent>
+                 </div>
               </Card>
             </div>
 
+            {/* History Strip */}
             <div className="space-y-6">
-              <h3 className="font-headline text-3xl text-primary">Recent Looks Viewed</h3>
-              <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-hide">
-                {[1, 2, 3, 4, 5].map(i => (
-                  <div key={i} className="min-w-[200px] aspect-[3/4] rounded-xl overflow-hidden relative group">
-                    <img 
-                      src={`https://picsum.photos/seed/history-${i}/400/600`} 
-                      alt="History" 
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
+              <h3 className="text-2xl font-headline text-gold flex items-center gap-3">
+                <History className="w-6 h-6" /> Recently Viewed
+              </h3>
+              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="min-w-[180px] aspect-[3/4] rounded-xl overflow-hidden relative group cursor-pointer border border-border">
+                    <img src={`https://picsum.photos/seed/history-${i}/400/600`} className="w-full h-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-transparent opacity-60" />
                     <div className="absolute bottom-4 left-4">
-                      <p className="text-xs text-primary font-bold uppercase">Wedding Look</p>
-                      <p className="text-[10px] text-foreground/40 italic">Viewed 2 days ago</p>
+                      <p className="text-[10px] uppercase font-bold text-gold">Festive Look</p>
+                      <p className="text-[8px] text-ivory-4">Viewed 2h ago</p>
                     </div>
                   </div>
                 ))}
@@ -258,348 +249,121 @@ export default function ProfilePage() {
             </div>
           </TabsContent>
 
-          {/* --- TAB 2: STYLE PROFILE --- */}
-          <TabsContent value="style profile" className="space-y-12 max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-               {/* Body Stats */}
-               <div className="space-y-8">
-                 <h3 className="text-2xl font-headline text-primary border-l-4 border-primary pl-4">Physique Details</h3>
-                 <div className="space-y-6">
-                    <div className="space-y-3">
-                      <Label className="text-xs uppercase tracking-widest text-foreground/50">Height (cm)</Label>
-                      <Slider 
-                        defaultValue={[profile.body.height]} 
-                        max={210} min={130} step={1} 
-                        className="py-4"
+          {/* Settings Panel */}
+          <TabsContent value="settings" className="max-w-4xl mx-auto space-y-12">
+            {/* Account Essentials */}
+            <Card className="bg-obsidian-2 border-border overflow-hidden">
+               <CardHeader className="bg-obsidian-3/50 border-b border-border p-6">
+                 <CardTitle className="text-lg flex items-center gap-3"><User size={20} className="text-gold" /> Account Essentials</CardTitle>
+               </CardHeader>
+               <CardContent className="p-8 space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] uppercase tracking-widest text-ivory-4 font-bold">Full Name</Label>
+                      <Input 
+                        disabled={!isEditing} 
+                        defaultValue={profile.name} 
+                        onChange={(e) => setProfile({...profile, name: e.target.value})}
+                        className="h-12 bg-obsidian-3 border-border focus:border-gold" 
                       />
                     </div>
-                    <div className="space-y-3">
-                      <Label className="text-xs uppercase tracking-widest text-foreground/50">Body Size</Label>
-                      <div className="grid grid-cols-6 gap-2">
-                        {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(size => (
-                          <button 
-                            key={size}
-                            className={cn(
-                              "h-10 border rounded transition-all text-xs font-bold",
-                              profile.body.size === size ? "bg-primary text-primary-foreground border-primary" : "border-primary/10 hover:border-primary/40"
-                            )}
-                          >
-                            {size}
-                          </button>
-                        ))}
-                      </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] uppercase tracking-widest text-ivory-4 font-bold">Username</Label>
+                      <Input 
+                        disabled={!isEditing} 
+                        defaultValue={profile.handle} 
+                        onChange={(e) => setProfile({...profile, handle: e.target.value})}
+                        className="h-12 bg-obsidian-3 border-border focus:border-gold" 
+                      />
                     </div>
-                 </div>
-               </div>
-
-               {/* Skin Harmony */}
-               <div className="space-y-8">
-                 <h3 className="text-2xl font-headline text-primary border-l-4 border-primary pl-4">Skin Harmony</h3>
-                 <div className="bg-card/30 p-6 rounded-2xl border border-primary/10 space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-lg font-headline">{profile.skin.tone}</p>
-                        <p className="text-[10px] text-foreground/40 uppercase tracking-widest">Monk Scale: 0{profile.skin.monk}</p>
-                      </div>
-                      <div className="w-16 h-16 rounded-full border-4 border-background shadow-lg" style={{ backgroundColor: profile.skin.hex }} />
-                    </div>
-                    <div className="space-y-3">
-                       <p className="text-[10px] uppercase tracking-widest text-foreground/50">Complementary Palette</p>
-                       <div className="flex gap-2">
-                          {['#C9A84C', '#C4545A', '#F5F0E8', '#1A2A6C', '#3D3D3D', '#8B0000'].map(c => (
-                            <div key={c} className="w-8 h-8 rounded-full border border-background shadow-sm" style={{ backgroundColor: c }} />
-                          ))}
-                       </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="w-full h-10 text-xs border-primary/20">
-                      Re-analyze Skin Tone
-                    </Button>
-                 </div>
-               </div>
-            </div>
-
-            <Separator className="bg-primary/10" />
-
-            {/* Preferences */}
-            <div className="space-y-8">
-              <h3 className="text-2xl font-headline text-primary border-l-4 border-primary pl-4">Style Vibe & Budget</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <div className="space-y-4">
-                  <Label className="text-xs uppercase tracking-widest text-foreground/50">Favorite Vibe</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {['Minimalist', 'Ethnic Fusion', 'Bohemian', 'Contemporary', 'Streetwear'].map(v => (
-                      <Badge 
-                        key={v} 
-                        className={cn(
-                          "cursor-pointer px-4 py-2", 
-                          profile.vibe === v ? "bg-primary text-primary-foreground" : "bg-primary/5 text-primary border-primary/10"
-                        )}
-                      >
-                        {v}
-                      </Badge>
-                    ))}
                   </div>
-                </div>
-                <div className="space-y-4">
-                   <div className="flex justify-between items-end">
-                      <Label className="text-xs uppercase tracking-widest text-foreground/50">Budget Range</Label>
-                      <span className="text-primary font-bold">₹{profile.budget[0]} - ₹{profile.budget[1]}</span>
-                   </div>
-                   <Slider defaultValue={profile.budget} max={20000} min={500} step={500} className="py-4" />
-                </div>
-              </div>
-            </div>
-
-            <div className="text-right pt-8">
-              <Button onClick={handleUpdate} size="lg" className="px-12 font-headline text-lg tracking-widest bg-primary text-primary-foreground">
-                Save Style Profile
-              </Button>
-            </div>
-          </TabsContent>
-
-          {/* --- TAB 3: ACTIVITY --- */}
-          <TabsContent value="activity" className="space-y-12">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-              <div className="lg:col-span-2 space-y-8">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-2xl font-headline text-primary">Outfit Recommendation History</h3>
-                  <Button variant="ghost" size="sm" className="text-xs uppercase tracking-widest">Clear History</Button>
-                </div>
-                <div className="space-y-4">
-                  {[
-                    { id: 1, name: 'Regal Silk Bandhgala', occ: 'Wedding', date: 'Oct 12, 2024', price: '₹12,499' },
-                    { id: 2, name: 'Minimal Linen Set', occ: 'Casual', date: 'Oct 10, 2024', price: '₹4,200' },
-                    { id: 3, name: 'Midnight Bloom Sari', occ: 'Festive', date: 'Oct 08, 2024', price: '₹8,900' },
-                  ].map(item => (
-                    <div key={item.id} className="flex items-center justify-between p-4 bg-card/20 border border-primary/5 rounded-xl hover:border-primary/30 transition-all group">
-                       <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted">
-                            <img src={`https://picsum.photos/seed/item-${item.id}/200/200`} className="w-full h-full object-cover" alt="item" />
-                          </div>
-                          <div>
-                            <p className="font-headline text-lg group-hover:text-primary transition-colors">{item.name}</p>
-                            <p className="text-[10px] uppercase tracking-widest text-foreground/40">{item.occ} • {item.date}</p>
-                          </div>
-                       </div>
-                       <div className="text-right">
-                          <p className="font-bold text-primary">{item.price}</p>
-                          <Button variant="link" className="h-auto p-0 text-[10px] uppercase text-foreground/40 hover:text-primary">View Look →</Button>
-                       </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-widest text-ivory-4 font-bold">Bio</Label>
+                    <Textarea 
+                      disabled={!isEditing} 
+                      defaultValue={profile.bio}
+                      onChange={(e) => setProfile({...profile, bio: e.target.value})}
+                      className="min-h-[100px] bg-obsidian-3 border-border focus:border-gold resize-none"
+                    />
+                  </div>
+                  {isEditing && (
+                    <div className="flex justify-end pt-4">
+                       <Button loading={isSaving} onClick={handleSaveProfile} className="h-12 px-12 bg-gold text-obsidian tracking-widest font-headline text-lg">
+                         Dispatch Changes
+                       </Button>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-8">
-                <h3 className="text-2xl font-headline text-primary">Active Price Alerts</h3>
-                <div className="space-y-4">
-                  {[
-                    { name: 'Kalamkari Handblock Sari', current: '₹5,800', target: '₹4,500', off: '22%' },
-                    { name: 'Pure Leather Juttis', current: '₹2,400', target: '₹1,900', off: '20%' },
-                  ].map(alert => (
-                    <Card key={alert.name} className="bg-primary/5 border-primary/10 overflow-hidden">
-                       <CardContent className="p-4 flex justify-between items-center">
-                          <div className="space-y-1">
-                             <p className="text-sm font-bold truncate max-w-[150px]">{alert.name}</p>
-                             <div className="flex items-center gap-2">
-                                <span className="text-xs line-through text-foreground/30">{alert.current}</span>
-                                <span className="text-xs font-bold text-primary">Target: {alert.target}</span>
-                             </div>
-                          </div>
-                          <Switch defaultChecked />
-                       </CardContent>
-                    </Card>
-                  ))}
-                </div>
-                <Button variant="ghost" className="w-full border-primary/10 h-12 text-xs uppercase tracking-widest">
-                  View All Alerts
-                </Button>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* --- TAB 4: SETTINGS --- */}
-          <TabsContent value="settings" className="space-y-12 max-w-4xl mx-auto">
-            {/* Account Settings */}
-            <div className="space-y-8">
-              <h3 className="text-2xl font-headline text-primary border-l-4 border-primary pl-4">Account Essentials</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                 <div className="space-y-2">
-                    <Label className="text-[10px] uppercase tracking-widest text-foreground/40">Full Name</Label>
-                    <Input defaultValue={profile.name} className="h-12 bg-card/20 border-primary/10" />
-                 </div>
-                 <div className="space-y-2">
-                    <Label className="text-[10px] uppercase tracking-widest text-foreground/40">Email Address</Label>
-                    <div className="relative">
-                      <Input defaultValue={profile.email} className="h-12 bg-card/20 border-primary/10 pr-24" />
-                      <Badge className="absolute right-3 top-1/2 -translate-y-1/2 bg-green-500/20 text-green-500 text-[8px] uppercase">Verified</Badge>
-                    </div>
-                 </div>
-              </div>
-            </div>
-
-            <Separator className="bg-primary/10" />
+                  )}
+               </CardContent>
+            </Card>
 
             {/* Notifications */}
-            <div className="space-y-8">
-              <h3 className="text-2xl font-headline text-primary border-l-4 border-primary pl-4">Notification Atelier</h3>
-              <div className="space-y-4">
-                {[
-                  { title: 'Price Drop Alerts', desc: 'Notify me when saved items hit my target price.', icon: Bell },
-                  { title: 'Style Digest', desc: 'Weekly roundup of trends personalized for your shape.', icon: Palette },
-                  { title: 'New Recommendations', desc: 'Real-time alerts when we find a match for you.', icon: ShoppingBag },
-                  { title: 'Connected Service Updates', desc: 'Maintenance and new platform arrivals.', icon: Monitor },
-                ].map(n => (
-                  <div key={n.title} className="flex items-center justify-between p-4 bg-card/20 rounded-xl border border-primary/5">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 rounded-full bg-primary/5 text-primary">
-                        <n.icon size={20} />
+            <Card className="bg-obsidian-2 border-border">
+               <CardHeader className="bg-obsidian-3/50 border-b border-border p-6">
+                 <CardTitle className="text-lg flex items-center gap-3"><Bell size={20} className="text-gold" /> Communication Atelier</CardTitle>
+               </CardHeader>
+               <CardContent className="p-8 space-y-6">
+                  {[
+                    { id: 'price', label: 'Price Drop Alerts', desc: 'Real-time notify when favorites hit target price' },
+                    { id: 'matches', label: 'New Style Matches', desc: 'Alert when we find outfits for your body type' },
+                    { id: 'digest', label: 'Weekly Style Journal', desc: 'Monday morning roundup of trends' }
+                  ].map((item) => (
+                    <div key={item.id} className="flex items-center justify-between py-2">
+                      <div className="space-y-0.5">
+                         <p className="text-sm font-bold text-ivory">{item.label}</p>
+                         <p className="text-[10px] text-ivory-4 uppercase tracking-widest">{item.desc}</p>
                       </div>
-                      <div>
-                        <p className="font-bold text-sm">{n.title}</p>
-                        <p className="text-xs text-foreground/40">{n.desc}</p>
-                      </div>
+                      <Switch defaultChecked />
                     </div>
-                    <Switch defaultChecked />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <Separator className="bg-primary/10" />
-
-            {/* Security */}
-            <div className="space-y-8">
-              <h3 className="text-2xl font-headline text-primary border-l-4 border-primary pl-4">Security & Authentication</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <Card className="bg-card/20 border-primary/10">
-                   <CardHeader>
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <Lock size={16} className="text-primary" /> Two-Factor Authentication
-                      </CardTitle>
-                   </CardHeader>
-                   <CardContent className="space-y-4">
-                      <p className="text-xs text-foreground/40 leading-relaxed">Secure your style profile with an additional layer of biometric or OTP protection.</p>
-                      <Button variant="outline" className="w-full text-xs uppercase tracking-widest border-primary/20">Enable 2FA</Button>
-                   </CardContent>
-                </Card>
-                <Card className="bg-card/20 border-primary/10">
-                   <CardHeader>
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <Monitor size={16} className="text-primary" /> Active Sessions
-                      </CardTitle>
-                   </CardHeader>
-                   <CardContent className="space-y-4">
-                      <div className="flex items-center gap-3">
-                         <Smartphone size={16} className="text-primary/60" />
-                         <div>
-                            <p className="text-xs font-bold">iPhone 15 Pro • Mumbai, IN</p>
-                            <p className="text-[10px] text-foreground/30 uppercase">Current Session</p>
-                         </div>
-                      </div>
-                      <Button variant="ghost" className="w-full text-xs uppercase tracking-widest text-accent">Sign Out All Devices</Button>
-                   </CardContent>
-                </Card>
-              </div>
-            </div>
-
-            {/* Subscription */}
-            <div className="space-y-8">
-              <h3 className="text-2xl font-headline text-primary border-l-4 border-primary pl-4">Atelier Membership</h3>
-              <Card className="bg-primary/5 border-primary/20 relative overflow-hidden p-8">
-                 <div className="absolute top-0 right-0 p-4">
-                    {isPro ? <ProBadge size="lg" /> : <Badge variant="secondary">FREE</Badge>}
-                 </div>
-                 <div className="space-y-6">
-                    <div>
-                      <h4 className="text-3xl font-headline mb-2">{isPro ? 'The Elite Atelier Plan' : 'Free Style Enthusiast'}</h4>
-                      <p className="text-sm text-foreground/60">
-                        {isPro 
-                          ? 'Unlimited style analysis, priority price alerts, and exclusive access.' 
-                          : 'Basic silhouette analysis and standard marketplace results.'}
-                      </p>
-                    </div>
-                    {isPro ? (
-                      <div className="flex items-center gap-8">
-                        <div>
-                            <p className="text-[10px] uppercase tracking-widest text-foreground/40">Renewal Date</p>
-                            <p className="text-lg font-bold">May 12, 2026</p>
-                        </div>
-                        <div>
-                            <p className="text-[10px] uppercase tracking-widest text-foreground/40">Billing cycle</p>
-                            <p className="text-lg font-bold">Annual</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <p className="text-xs text-primary font-bold">Upgrade to Pro for unlimited AI intelligence.</p>
-                        <Button asChild className="bg-primary text-primary-foreground font-headline tracking-widest">
-                          <Link href="/pricing">Upgrade Now</Link>
-                        </Button>
-                      </div>
-                    )}
-                    {isPro && (
-                      <div className="flex gap-4">
-                        <Button variant="outline" className="border-primary/20 font-headline tracking-widest">Manage Billing</Button>
-                        <Button variant="ghost" onClick={cancelSubscription} className="text-foreground/40 hover:text-accent">Cancel Membership</Button>
-                      </div>
-                    )}
-                 </div>
-              </Card>
-            </div>
+                  ))}
+               </CardContent>
+            </Card>
 
             {/* Danger Zone */}
-            <div className="space-y-8 pt-12">
-               <div className="p-8 border-2 border-accent/20 rounded-2xl bg-accent/5 space-y-8">
-                  <div className="flex items-center gap-4 text-accent">
-                    <AlertTriangle size={32} />
-                    <div>
-                      <h3 className="text-2xl font-headline">Danger Zone</h3>
-                      <p className="text-sm">Careful. These actions are irreversible and will purge your history.</p>
+            <div className="pt-8">
+               <div className="p-8 rounded-[24px] bg-rose/5 border-2 border-dashed border-rose/20 space-y-8">
+                  <div className="flex items-center gap-6">
+                    <div className="p-4 rounded-full bg-rose/10 text-rose">
+                      <AlertTriangle size={32} />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-2xl font-headline text-rose">Danger Zone</h3>
+                      <p className="text-xs text-rose/60 uppercase tracking-widest font-bold">These actions are irreversible</p>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                     <Button variant="outline" className="border-accent/20 text-accent hover:bg-accent/10">Delete Style History</Button>
-                     <Button variant="outline" className="border-accent/20 text-accent hover:bg-accent/10">Reset AI Profile</Button>
-                     
-                     <Dialog>
-                       <DialogTrigger asChild>
-                         <Button variant="destructive">Delete My Account</Button>
-                       </DialogTrigger>
-                       <DialogContent className="bg-background border-accent/20">
-                          <DialogHeader>
-                            <DialogTitle className="text-3xl font-headline text-accent">Final Departure</DialogTitle>
-                            <DialogDescription>
-                              This will permanently delete your style profile, saved items, and history. This action cannot be undone.
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Button variant="outline" className="h-14 border-rose/20 text-rose hover:bg-rose/5 uppercase tracking-widest text-[10px] font-bold">
+                       Reset AI Analysis Profile
+                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="danger" className="h-14 bg-rose text-white uppercase tracking-widest text-[10px] font-bold">
+                          Delete Style Identity
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="bg-obsidian-2 border-rose/20">
+                         <DialogHeader>
+                            <DialogTitle className="text-rose font-headline text-3xl">Final Departure</DialogTitle>
+                            <DialogDescription className="text-ivory-3">
+                              This will permanently purge your silhouette data, analysis history, and saved outfits within 30 days.
                             </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4 py-6">
-                             <Label className="text-xs uppercase tracking-widest text-foreground/40">Type <span className="text-accent font-bold">DELETE</span> to confirm</Label>
-                             <Input 
-                                value={deleteConfirm} 
-                                onChange={(e) => setDeleteConfirm(e.target.value)}
-                                className="h-12 border-accent/20 bg-accent/5 focus-visible:ring-accent" 
-                             />
-                          </div>
-                          <DialogFooter>
-                             <Button variant="ghost" onClick={() => setDeleteConfirm('')}>Cancel</Button>
-                             <Button 
-                                variant="destructive" 
-                                disabled={deleteConfirm !== 'DELETE'}
-                                className="px-8 font-headline tracking-widest"
-                             >
-                                Delete Forever
-                             </Button>
-                          </DialogFooter>
-                       </DialogContent>
-                     </Dialog>
+                         </DialogHeader>
+                         <div className="py-6 space-y-4">
+                            <Label className="text-[10px] uppercase font-bold text-ivory-4">Type <span className="text-rose">DELETE</span> to confirm</Label>
+                            <Input className="h-12 bg-obsidian-3 border-rose/30 focus:border-rose" />
+                         </div>
+                         <DialogFooter>
+                            <Button variant="outline" className="h-12 flex-1">Cancel</Button>
+                            <Button variant="danger" className="h-12 flex-1">Purge Account</Button>
+                         </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                </div>
             </div>
-            
+
             <div className="text-center pt-12">
-               <p className="text-[10px] uppercase tracking-[0.5em] text-foreground/20">DRAPE AI • DESIGNED IN INDIA • DATA PRIVACY CERTIFIED</p>
+               <p className="text-[10px] uppercase tracking-[0.5em] text-ivory-4 font-bold">DRAPE AI • DATA PRIVACY CERTIFIED • ISO 27001</p>
             </div>
           </TabsContent>
         </Tabs>

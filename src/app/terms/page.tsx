@@ -1,108 +1,100 @@
 'use client';
 
 import { LegalLayout } from '@/components/legal/legal-layout';
-import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
 
 const sections = [
   { id: 'acceptance', title: '1. Acceptance of Terms' },
-  { id: 'service', title: '2. Description of Service' },
-  { id: 'accounts', title: '3. User Accounts' },
-  { id: 'use-policy', title: '4. Acceptable Use' },
-  { id: 'disclaimer', title: '5. AI Recommendations Disclaimer' },
-  { id: 'affiliate', title: '6. Affiliate Disclosure' },
-  { id: 'ip', title: '7. Intellectual Property' },
-  { id: 'billing', title: '8. Subscriptions & Billing' },
-  { id: 'liability', title: '9. Limitation of Liability' },
-  { id: 'governing-law', title: '10. Governing Law' },
-  { id: 'disputes', title: '11. Dispute Resolution' },
+  { id: 'eligibility', title: '2. Eligibility' },
+  { id: 'service', title: '3. Description of Service' },
+  { id: 'accounts', title: '4. User Accounts' },
+  { id: 'use-policy', title: '5. Acceptable Use' },
+  { id: 'photos', title: '6. Photo Upload and AI Analysis' },
+  { id: 'affiliate', title: '7. Affiliate Disclosure' },
+  { id: 'ip', title: '8. Intellectual Property' },
+  { id: 'subscription', title: '9. Subscription and Payments' },
+  { id: 'disclaimers', title: '10. Disclaimers' },
+  { id: 'liability', title: '11. Limitation of Liability' },
+  { id: 'law', title: '12. Governing Law' },
 ];
 
 export default function TermsAndConditions() {
   return (
     <LegalLayout
       title="Terms & Conditions"
-      lastUpdated="June 20, 2025"
+      lastUpdated="January 20, 2025"
       sections={sections}
       relatedLink={{ href: '/privacy-policy', label: 'Privacy Policy' }}
     >
       <div className="prose prose-invert prose-gold max-w-none">
         <section id="acceptance" className="scroll-mt-32">
-          <h2 className="text-4xl font-headline text-primary mb-6">1. Acceptance of Terms</h2>
-          <p className="text-lg leading-relaxed text-foreground/80">
-            By accessing or using DRAPE AI, you agree to be bound by these Terms and Conditions and our Privacy Policy. If you do not agree to all of these terms, do not use the service.
+          <h2 className="text-3xl font-headline text-gold mb-6 italic">1. Acceptance of Terms</h2>
+          <p className="text-lg leading-relaxed text-ivory-2">
+            By accessing or using DRAPE AI, you agree to these Terms. These terms form a legally binding agreement between you and DRAPE AI regarding the use of our digital fashion atelier. If you disagree with any part of these terms, you must cease use of the service immediately.
           </p>
         </section>
 
-        <section id="service" className="scroll-mt-32">
-          <h2 className="text-4xl font-headline text-primary mb-6">2. Description of Service</h2>
-          <p className="text-lg leading-relaxed text-foreground/80">
-            DRAPE AI is a technology-driven fashion styling platform that uses artificial intelligence to analyze user photos and data to provide outfit recommendations. Our services include silhouette analysis, skin tone mapping, and marketplace price tracking.
+        <section id="eligibility" className="scroll-mt-32 pt-12">
+          <h2 className="text-3xl font-headline text-gold mb-6 italic">2. Eligibility</h2>
+          <p className="text-ivory-3 leading-relaxed">
+            You must be at least 13 years old to use DRAPE AI. Users aged 13-18 require parental or guardian consent. One account per person is permitted, and you must provide accurate, current, and complete information during registration.
           </p>
         </section>
 
-        <section id="accounts" className="scroll-mt-32">
-          <h2 className="text-4xl font-headline text-primary mb-6">3. User Accounts</h2>
-          <p className="text-lg leading-relaxed text-foreground/80 mb-4">
-            To use certain features, you must register for an account. By registering, you agree that:
+        <section id="service" className="scroll-mt-32 pt-12">
+          <h2 className="text-3xl font-headline text-gold mb-6 italic">3. Description of Service</h2>
+          <p className="text-ivory-3 leading-relaxed mb-4">
+            DRAPE AI provides AI-powered fashion recommendations based on body shape analysis, skin tone detection, and style preferences. We connect users with products on third-party platforms (Amazon, Flipkart, Meesho) through affiliate links.
           </p>
-          <ul className="space-y-2 text-foreground/70">
-            <li>• You are at least 13 years of age.</li>
-            <li>• The information provided during registration is accurate and complete.</li>
-            <li>• You will maintain the security of your password and account details.</li>
-            <li>• You are solely responsible for all activity that occurs under your account.</li>
-          </ul>
-        </section>
-
-        <section id="disclaimer" className="scroll-mt-32">
-          <h2 className="text-4xl font-headline text-primary mb-6">5. AI Recommendations Disclaimer</h2>
-          <div className="bg-accent/10 p-8 rounded-2xl border border-accent/20 border-l-4 border-l-accent">
-            <h4 className="font-headline text-2xl text-accent mb-4">Nature of Suggestions</h4>
-            <p className="text-lg leading-relaxed text-foreground/80">
-              Outfit suggestions provided by DRAPE AI are generated by artificial intelligence models based on your input. While we strive for accuracy, these are subjective styling recommendations. DRAPE AI does not guarantee satisfaction with any purchases made based on these suggestions.
-            </p>
-            <p className="mt-4 text-sm text-foreground/60 italic">
-              Note: Prices and inventory levels are fetched in real-time but can change rapidly. Always verify the final details on the merchant's platform.
-            </p>
+          <div className="flex flex-wrap gap-4">
+            <Badge variant="outline" className="border-gold/20 text-gold uppercase px-4 py-1">We do not sell products directly</Badge>
+            <Badge variant="outline" className="border-gold/20 text-gold uppercase px-4 py-1">We do not fulfill orders</Badge>
           </div>
         </section>
 
-        <section id="affiliate" className="scroll-mt-32">
-          <h2 className="text-4xl font-headline text-primary mb-6">6. Affiliate Disclosure</h2>
-          <p className="text-lg leading-relaxed text-foreground/80">
-            DRAPE AI participates in affiliate marketing programs with platforms like Amazon India, Flipkart, and Meesho. This means we may earn a small commission on qualifying purchases made through our links, at no additional cost to you. Our styling recommendations are based purely on style-fit logic and are not influenced by commission rates.
+        <section id="photos" className="scroll-mt-32 pt-12">
+          <h2 className="text-3xl font-headline text-gold mb-6 italic">6. Photo Upload and AI Analysis</h2>
+          <div className="space-y-4 text-ivory-3">
+            <p>By uploading photos you confirm:</p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>You own the photo or have explicit rights to use it.</li>
+              <li>You are the individual depicted in the photo.</li>
+              <li>You consent to AI processing for silhouette mapping.</li>
+            </ul>
+            <p className="italic text-rose/80">AI recommendations are suggestions only. Results may vary based on photo quality and lighting. We do not guarantee 100% measurement accuracy.</p>
+          </div>
+        </section>
+
+        <section id="affiliate" className="scroll-mt-32 pt-12">
+          <h2 className="text-3xl font-headline text-gold mb-6 italic">7. Affiliate Disclosure</h2>
+          <p className="text-ivory-3 leading-relaxed">
+            DRAPE AI participates in affiliate marketing programs. We may earn a small commission when you click our links and make purchases on partner platforms. This occurs at no additional cost to you. Our recommendations are driven by <strong className="text-ivory">style-fit logic</strong>, not commission rates.
           </p>
         </section>
 
-        <section id="ip" className="scroll-mt-32">
-          <h2 className="text-4xl font-headline text-primary mb-6">7. Intellectual Property</h2>
-          <p className="text-lg leading-relaxed text-foreground/80">
-            The DRAPE AI name, logo, design system, and proprietary algorithms are the sole property of DRAPE AI. User-uploaded photos remain the property of the user. Style suggestions generated by the AI are provided for your personal, non-commercial use only.
-          </p>
-        </section>
-
-        <section id="billing" className="scroll-mt-32">
-          <h2 className="text-4xl font-headline text-primary mb-6">8. Subscriptions & Billing</h2>
-          <p className="text-lg leading-relaxed text-foreground/80 mb-4">
-            Premium features are billed on a recurring monthly or annual basis via Razorpay.
-          </p>
-          <ul className="space-y-2 text-foreground/70">
-            <li>• Subscriptions can be cancelled at any time from your account settings.</li>
-            <li>• We do not provide refunds for partial months or unused credits.</li>
-            <li>• Price changes will be notified at least 30 days in advance.</li>
+        <section id="subscription" className="scroll-mt-32 pt-12">
+          <h2 className="text-3xl font-headline text-gold mb-6 italic">9. Subscription and Payments</h2>
+          <p className="text-ivory-3 mb-6">Pro subscriptions are billed monthly or annually via Razorpay. All prices shown include applicable Indian taxes.</p>
+          <ul className="space-y-4 text-ivory-3">
+             <li className="flex gap-4">
+               <span className="text-gold font-bold">A.</span>
+               <p>Subscriptions auto-renew unless cancelled at least 24 hours before the period ends.</p>
+             </li>
+             <li className="flex gap-4">
+               <span className="text-gold font-bold">B.</span>
+               <p>No refunds are provided for partial billing periods or unused features.</p>
+             </li>
+             <li className="flex gap-4">
+               <span className="text-gold font-bold">C.</span>
+               <p>One free trial is permitted per user. Cards may be verified upon signup.</p>
+             </li>
           </ul>
         </section>
 
-        <section id="governing-law" className="scroll-mt-32">
-          <h2 className="text-4xl font-headline text-primary mb-6">10. Governing Law</h2>
-          <p className="text-lg leading-relaxed text-foreground/80">
-            These terms shall be governed by and construed in accordance with the laws of India. Any disputes arising from these terms shall be subject to the exclusive jurisdiction of the courts in Bangalore, Karnataka.
-          </p>
-        </section>
-
-        <section id="disputes" className="scroll-mt-32">
-          <h2 className="text-4xl font-headline text-primary mb-6">11. Dispute Resolution</h2>
-          <p className="text-lg leading-relaxed text-foreground/80">
-            If you have a dispute, we encourage you to contact our legal team at <span className="text-primary underline">legal@drapeai.in</span> first. We will attempt to resolve any issues through informal negotiation within 60 days.
+        <section id="law" className="scroll-mt-32 pt-12">
+          <h2 className="text-3xl font-headline text-gold mb-6 italic">12. Governing Law</h2>
+          <p className="text-ivory-3 leading-relaxed">
+            These terms are governed by the laws of the Republic of India. Any disputes arising from these terms shall be subject to the exclusive jurisdiction of the courts in <strong className="text-ivory">Bangalore, Karnataka</strong>. We encourage resolution through our support curators first.
           </p>
         </section>
       </div>
