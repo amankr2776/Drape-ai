@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { DrapeLogo } from './drape-logo';
+import { useAuth } from '@/context/AuthContext';
 
 const NAV_GROUPS = [
   {
@@ -56,6 +57,7 @@ const NAV_GROUPS = [
 
 export function Sidebar({ className }: { className?: string }) {
   const pathname = usePathname();
+  const { signOut } = useAuth();
   const [collapsedGroups, setCollapsedGroups] = useState<string[]>([]);
 
   const toggleGroup = (label: string) => {
@@ -65,7 +67,10 @@ export function Sidebar({ className }: { className?: string }) {
   };
 
   return (
-    <aside className={cn("bg-card/40 backdrop-blur-2xl flex flex-col p-6 space-y-8 overflow-y-auto", className)}>
+    <aside 
+      className={cn("bg-card/40 backdrop-blur-2xl flex flex-col p-6 space-y-8 overflow-y-auto", className)}
+      style={{ zIndex: 'var(--z-navbar)' }}
+    >
       <div className="px-4 py-2">
         <DrapeLogo className="scale-110" />
       </div>
@@ -125,7 +130,10 @@ export function Sidebar({ className }: { className?: string }) {
       </nav>
 
       <div className="pt-6 border-t border-border">
-        <button className="nav-item w-full text-foreground/40 hover:text-rose transition-colors">
+        <button 
+          onClick={() => signOut()}
+          className="nav-item w-full text-foreground/40 hover:text-rose transition-colors"
+        >
           <LogOut className="w-5 h-5" />
           Sign Out
         </button>

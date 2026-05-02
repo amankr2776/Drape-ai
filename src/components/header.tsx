@@ -29,11 +29,13 @@ import { cn } from '@/lib/utils';
 import { useStore } from '@/hooks/use-store';
 import { NotificationBell } from './notifications/notification-bell';
 import { SearchOverlay } from './search/search-overlay';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { cart } = useStore();
+  const { signOut, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -46,9 +48,10 @@ export default function Header() {
     <>
       <header
         className={cn(
-          'fixed top-0 right-0 left-0 lg:left-72 h-16 flex items-center px-6 transition-all duration-300 z-30',
+          'fixed top-0 right-0 left-0 lg:left-72 h-16 flex items-center px-6 transition-all duration-300',
           isScrolled ? 'bg-background/80 backdrop-blur-xl border-b border-border shadow-sm' : 'bg-transparent'
         )}
+        style={{ zIndex: 'var(--z-navbar)' }}
       >
         <div className="flex-1 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -89,8 +92,12 @@ export default function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 pl-2 border-l border-white/10 ml-2 group outline-none">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs">
-                    AS
+                  <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs overflow-hidden">
+                    {user?.photoURL ? (
+                      <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      user?.displayName?.charAt(0) || 'U'
+                    )}
                   </div>
                   <ChevronDown size={14} className="text-foreground/40 group-hover:text-primary transition-colors" />
                 </button>
@@ -105,7 +112,7 @@ export default function Header() {
                   <Settings size={16} /> Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="gap-2 text-rose cursor-pointer">
+                <DropdownMenuItem className="gap-2 text-rose cursor-pointer" onClick={() => signOut()}>
                   <LogOut size={16} /> Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>

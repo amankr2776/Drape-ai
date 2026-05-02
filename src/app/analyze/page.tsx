@@ -153,7 +153,7 @@ export default function AnalyzePage() {
   return (
     <div className="min-h-screen bg-obsidian flex flex-col items-center pt-24 pb-32 px-6">
       {/* Progress Bar */}
-      <div className="fixed top-[64px] left-0 right-0 h-1 bg-border z-[100]">
+      <div className="fixed top-[64px] left-0 right-0 h-1 bg-border z-[var(--z-sticky)]">
         <motion.div 
           className="h-full bg-gold shadow-gold-glow"
           initial={{ width: 0 }}
@@ -451,7 +451,7 @@ function AnalysisLoadingOverlay() {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[200] bg-obsidian flex flex-col items-center justify-center p-8 text-center">
+    <div className="fixed inset-0 z-[var(--z-modal)] bg-obsidian flex flex-col items-center justify-center p-8 text-center">
       <div className="w-full max-w-md relative">
         <div className="absolute -top-32 left-1/2 -translate-x-1/2">
            <DrapeLogo className="scale-150 animate-pulse" />
