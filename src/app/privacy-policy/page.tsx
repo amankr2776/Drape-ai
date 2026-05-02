@@ -26,7 +26,11 @@ export default function PrivacyPolicyPage() {
       <section id="intro" className="scroll-mt-32">
         <h2 className="text-3xl font-headline text-gold mb-6">1. Introduction</h2>
         <p className="text-lg leading-relaxed text-foreground/70">
-          DRAPE AI ("we", "our", "us") operates the fashion AI platform at drapeai.in. This Privacy Policy explains how we collect, use, store, and protect your personal information in compliance with India's Digital Personal Data Protection Act 2023 (DPDP Act), and applicable international standards.
+          DRAPE AI ("we", "our", "us") operates the fashion AI platform at <a href="https://drapeai.in" style={{color:'#C9A84C'}}>drapeai.in</a>. This Privacy Policy explains how we collect, use, store, and protect your personal information in compliance with India's Digital Personal Data Protection Act 2023 (DPDP Act), and applicable international standards including GDPR principles.
+        </p>
+        <p className="text-foreground/70 mt-4">
+          Effective Date: January 1, 2025.<br />
+          Contact: <a href="mailto:privacy@drapeai.in" style={{color:'#C9A84C'}}>privacy@drapeai.in</a> | <a href="mailto:drapeai78000@gmail.com" style={{color:'#C9A84C'}}>drapeai78000@gmail.com</a>
         </p>
       </section>
 
@@ -38,7 +42,10 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc pl-6 space-y-2">
               <li>Identity data: full name, username, date of birth, gender identity.</li>
               <li>Contact data: email address, phone number, city.</li>
+              <li>Authentication data: encrypted password hash.</li>
+              <li>Profile photo: optional, stored securely.</li>
               <li>Body data: height, weight range, body size, measurements.</li>
+              <li>Style data: occasions, budget, color preferences, style vibe.</li>
               <li>Uploaded photos: full-body photos for AI analysis.</li>
             </ul>
           </div>
@@ -79,7 +86,7 @@ export default function PrivacyPolicyPage() {
           Under the DPDP Act 2023, you have the right to access, correction, erasure, and portability of your data. You may also nominate someone to manage your data rights.
         </p>
         <p className="text-foreground/70">
-          To exercise your rights, visit Settings > Privacy > Manage My Data or email privacy@drapeai.in.
+          To exercise your rights, visit Settings &gt; Privacy &gt; Manage My Data or email <a href="mailto:privacy@drapeai.in" style={{color:'#C9A84C'}}>privacy@drapeai.in</a>.
         </p>
       </section>
 

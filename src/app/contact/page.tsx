@@ -10,7 +10,6 @@ import {
   CheckCircle2, 
   Loader2,
   MessageSquare,
-  ArrowRight,
   ArrowUpRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -64,7 +63,9 @@ export default function ContactPage() {
                 <Mail size={40} />
               </div>
               <div className="space-y-2">
-                <p className="text-3xl font-headline text-gold underline underline-offset-8 decoration-gold/30">drapeai78000@gmail.com</p>
+                <p className="text-3xl font-headline text-gold underline underline-offset-8 decoration-gold/30">
+                  <a href="mailto:drapeai78000@gmail.com" style={{color:'#C9A84C'}}>drapeai78000@gmail.com</a>
+                </p>
                 <p className="text-xs uppercase tracking-widest text-ivory-4 font-bold">Official Support Dispatch</p>
               </div>
             </div>

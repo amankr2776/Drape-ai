@@ -30,16 +30,6 @@ const values = [
 ];
 
 export default function AboutPage() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1 }
-  };
-
   return (
     <div className="min-h-screen bg-background pt-32 pb-20">
       {/* Hero Section */}
@@ -87,6 +77,9 @@ export default function AboutPage() {
             <p>
               By leveraging advanced computer vision, we map the unique geometry of your silhouette, 
               ensuring that every recommendation feels bespoke. We don't just find clothes; we find your aesthetic soul.
+            </p>
+            <p>
+              For any questions, reach us at <a href="mailto:drapeai78000@gmail.com" style={{color:'#C9A84C'}}>drapeai78000@gmail.com</a>.
             </p>
           </div>
         </div>

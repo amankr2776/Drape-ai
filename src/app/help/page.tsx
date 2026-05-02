@@ -83,6 +83,13 @@ export default function HelpPage() {
         </Card>
       </div>
 
+      <section className="space-y-8 pt-12 text-center">
+        <h2 className="text-3xl font-headline">Need direct assistance?</h2>
+        <p className="text-foreground/60">
+          Email us at <a href="mailto:drapeai78000@gmail.com" style={{color:'#C9A84C'}}>drapeai78000@gmail.com</a> and we'll get back to you within 24 hours.
+        </p>
+      </section>
+
       <section className="space-y-8 pt-12">
         <h2 className="text-3xl font-headline">Frequently Asked</h2>
         <div className="grid grid-cols-1 gap-4">

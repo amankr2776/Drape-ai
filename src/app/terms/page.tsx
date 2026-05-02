@@ -16,6 +16,7 @@ const sections = [
   { id: 'disclaimers', title: '10. Disclaimers' },
   { id: 'liability', title: '11. Limitation of Liability' },
   { id: 'law', title: '12. Governing Law' },
+  { id: 'dispute', title: '13. Dispute Resolution' },
 ];
 
 export default function TermsAndConditions() {
@@ -84,17 +85,20 @@ export default function TermsAndConditions() {
                <span className="text-gold font-bold">B.</span>
                <p>No refunds are provided for partial billing periods or unused features.</p>
              </li>
-             <li className="flex gap-4">
-               <span className="text-gold font-bold">C.</span>
-               <p>One free trial is permitted per user. Cards may be verified upon signup.</p>
-             </li>
           </ul>
+        </section>
+
+        <section id="dispute" className="scroll-mt-32 pt-12">
+          <h2 className="text-3xl font-headline text-gold mb-6 italic">13. Dispute Resolution</h2>
+          <p className="text-ivory-3 leading-relaxed">
+            In case of any dispute, please contact support at <a href="mailto:drapeai78000@gmail.com" style={{color:'#C9A84C'}}>drapeai78000@gmail.com</a>. If unresolved, disputes are subject to arbitration in Bangalore, Karnataka.
+          </p>
         </section>
 
         <section id="law" className="scroll-mt-32 pt-12">
           <h2 className="text-3xl font-headline text-gold mb-6 italic">12. Governing Law</h2>
           <p className="text-ivory-3 leading-relaxed">
-            These terms are governed by the laws of the Republic of India. Any disputes arising from these terms shall be subject to the exclusive jurisdiction of the courts in <strong className="text-ivory">Bangalore, Karnataka</strong>. We encourage resolution through our support curators first.
+            These terms are governed by the laws of the Republic of India. Any disputes arising from these terms shall be subject to the exclusive jurisdiction of the courts in <strong className="text-ivory">Bangalore, Karnataka</strong>.
           </p>
         </section>
       </div>
