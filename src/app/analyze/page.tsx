@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, createElement } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, 
   ScanLine, 
   Palette, 
-  ShoppingCart, 
+  ShoppingBag, 
   CheckCircle, 
   Camera, 
   Ruler, 
@@ -17,7 +17,8 @@ import {
   ArrowLeft,
   X,
   Upload,
-  Loader2
+  Loader2,
+  Info
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -31,6 +32,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { performFullAnalysis } from '@/lib/actions';
+import { DrapeLogo } from '@/components/drape-logo';
 
 const STEPS = [
   { id: 'dimensions', title: 'Body Dimensions', icon: Ruler },
@@ -495,9 +497,4 @@ function AnalysisLoadingOverlay() {
       </div>
     </div>
   );
-}
-
-function createElement(icon: any, props: any) {
-  const Icon = icon;
-  return <Icon {...props} />;
 }
