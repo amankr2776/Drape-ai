@@ -1,13 +1,11 @@
+
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
+import { getAuth, Auth, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
 
-/**
- * FIREBASE CONFIG OBJECT
- * Standard Next.js process.env access.
- */
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -20,31 +18,28 @@ const firebaseConfig = {
 let app: FirebaseApp | undefined;
 let db: Firestore | undefined;
 let storage: FirebaseStorage | undefined;
+let auth: Auth | undefined;
 
-/**
- * SAFE INITIALIZATION
- * Prevents the app from crashing on boot if keys are missing.
- */
 if (firebaseConfig.apiKey) {
   try {
     app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     db = getFirestore(app);
     storage = getStorage(app);
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log('✅ Firebase initialized successfully');
-    }
+    auth = getAuth(app);
   } catch (error) {
     console.error("❌ Firebase initialization failed:", error);
   }
-} else {
-  console.warn("⚠️ Firebase API Key missing. Database features will be limited. Please check your .env file.");
 }
 
-export { app, db, storage };
+export { app, db, storage, auth };
+
+export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+export const appleProvider = new OAuthProvider('apple.com');
 
 export function initializeFirebase() {
-  return { app, db, storage };
+  return { app, db, storage, auth };
 }
 
 export { FirebaseProvider, useFirebase } from './provider';
