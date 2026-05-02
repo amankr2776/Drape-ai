@@ -35,7 +35,7 @@ import { cn } from '@/lib/utils';
 
 type AuthView = 'signin' | 'signup' | 'forgot' | 'success';
 
-export default function LoginPage() {
+function LoginPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -517,4 +517,9 @@ export default function LoginPage() {
       </div>
     </div>
   );
+}
+
+import{Suspense}from'react';
+export default function LoginPage(){
+return(<Suspense fallback={<div style={{minHeight:'100vh',background:'#0A0A0F'}}/>}><LoginPageInner/></Suspense>);
 }

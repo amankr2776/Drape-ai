@@ -1,6 +1,3 @@
-
-'use client';
-
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
@@ -15,10 +12,7 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-let app: FirebaseApp | undefined;
-let db: Firestore | undefined;
-let storage: FirebaseStorage | undefined;
-let auth: Auth | undefined;
+let app, db, storage, auth, googleProvider, appleProvider;
 
 if (firebaseConfig.apiKey) {
   try {
@@ -26,21 +20,13 @@ if (firebaseConfig.apiKey) {
     db = getFirestore(app);
     storage = getStorage(app);
     auth = getAuth(app);
-  } catch (error) {
-    console.error("❌ Firebase initialization failed:", error);
-  }
+    googleProvider = new GoogleAuthProvider();
+    googleProvider.setCustomParameters({ prompt: 'select_account' });
+    appleProvider = new OAuthProvider('apple.com');
+  } catch (e) { console.error(e); }
 }
 
-export { app, db, storage, auth };
-
-export const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({ prompt: 'select_account' });
-
-export const appleProvider = new OAuthProvider('apple.com');
-
-export function initializeFirebase() {
-  return { app, db, storage, auth };
-}
-
+export { app, db, storage, auth, googleProvider, appleProvider };
+export function initializeFirebase() { return { app, db, storage, auth }; }
 export { FirebaseProvider, useFirebase } from './provider';
 export { FirebaseClientProvider } from './client-provider';
