@@ -60,7 +60,7 @@ export default function OnboardingPage() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col items-center justify-center px-16 md:px-24 pt-24 pb-32">
         <div className="w-full max-w-xl">
-          {/* Progress Dots (FIX 5) */}
+          {/* Progress Dots */}
           <div className="flex gap-[6px] mb-48 justify-center items-center">
             {STEPS.map((_, i) => (
               <motion.div 
@@ -154,7 +154,10 @@ export default function OnboardingPage() {
 
                 {step === 3 && (
                   <div className="space-y-24 text-left">
-                    <Input label="Height (cm)" type="number" defaultValue={formData.height} onChange={e => updateData('height', e.target.value)} />
+                    <div className="space-y-2">
+                        <label className="text-label text-gold">Height (cm)</label>
+                        <Input type="number" defaultValue={formData.height} onChange={e => updateData('height', (e.target as HTMLInputElement).value)} />
+                    </div>
                     <div className="space-y-8">
                       <p className="text-label text-gold">Body Size</p>
                       <div className="flex gap-8">
@@ -193,11 +196,11 @@ export default function OnboardingPage() {
                 )}
               </div>
             </motion.div>
-          </AnPresence>
+          </AnimatePresence>
         </div>
       </div>
 
-      {/* Bottom Navigation Bar (PART 12 FIX) */}
+      {/* Bottom Navigation Bar */}
       <div 
         className="fixed bottom-0 left-0 right-0 bg-obsidian border-t border-border px-16 md:px-24 py-16 flex items-center justify-center"
         style={{ zIndex: 'var(--z-navbar)', paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
