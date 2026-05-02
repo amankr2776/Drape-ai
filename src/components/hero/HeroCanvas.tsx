@@ -127,8 +127,6 @@ export default function HeroCanvas() {
 
       // Cloth Verlet Simulation
       const damping = 0.92;
-      const morphTarget = s.morph.target;
-      const mProg = s.morph.progress;
 
       for (let i = 0; i < CLOTH_ROWS; i++) {
         for (let j = 0; j < CLOTH_COLS; j++) {
@@ -249,8 +247,8 @@ export default function HeroCanvas() {
         
         // Volumetric God Rays
         for (let i = 0; i < 8; i++) {
-          const angle = (time * 0.1 + (i / 8) * Math.PI * 2);
-          const intensity = (Math.sin(time * 0.5 + i) * 0.3 + 0.7) * 0.1;
+          const angle = (s.time * 0.1 + (i / 8) * Math.PI * 2);
+          const intensity = (Math.sin(s.time * 0.5 + i) * 0.3 + 0.7) * 0.1;
           const grad = bgCtx.createRadialGradient(W/2, H/3, 0, W/2, H/3, W);
           grad.addColorStop(0, `rgba(${curColor.join(',')}, ${intensity})`);
           grad.addColorStop(1, 'transparent');
@@ -334,12 +332,12 @@ export default function HeroCanvas() {
       
       // Rotating Rings
       lensCtx.beginPath();
-      lensCtx.arc(mx, my, 12, time * 2, time * 2 + Math.PI * 1.5);
+      lensCtx.arc(mx, my, 12, s.time * 2, s.time * 2 + Math.PI * 1.5);
       lensCtx.stroke();
       
       lensCtx.beginPath();
-      const pulse = 24 + Math.sin(time * 4) * 4;
-      lensCtx.arc(mx, my, pulse, -time, -time + Math.PI);
+      const pulse = 24 + Math.sin(s.time * 4) * 4;
+      lensCtx.arc(mx, my, pulse, -s.time, -s.time + Math.PI);
       lensCtx.globalAlpha = 0.3;
       lensCtx.stroke();
       lensCtx.globalAlpha = 1;
